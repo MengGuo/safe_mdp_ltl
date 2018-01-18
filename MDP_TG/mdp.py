@@ -15,7 +15,7 @@ class Motion_MDP(DiGraph):
         print "-------Motion MDP Initialized-------"
         self.add_edges(edge_dict, U)
         print "%s states and %s edges" %(str(len(self.nodes())), str(len(self.edges())))
-        self.unify_mdp()
+        #self.unify_mdp()
         
     def add_edges(self, edge_dict, U):
         self.graph['U'] = set()

@@ -328,6 +328,7 @@ class Product_Dra(DiGraph):
                 t += 1
             return X, L, U, M, PX
 
+            
         def rd_execution(self, best_all_plan, total_T, state_seq, label_seq):
             #----plan execution with or without given observation----
             #----Round-robin policy as the plan suffix----
