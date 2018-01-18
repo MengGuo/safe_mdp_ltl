@@ -7,6 +7,8 @@ from numpy import random
 from mdp import find_MECs, find_SCCs
 from ltl2dra import parse_dra, run_ltl2dra
 
+from dirichlet import dirichlet_dist, prod_dirichlet
+
 
 from lp import act_by_plan, rd_act_by_plan
 
@@ -97,12 +99,46 @@ class Product_Dra(DiGraph):
                                             prob_cost = dict()
                                             for u, attri in mdp_edge['prop'].iteritems():
                                                 if t_label_prob*attri[0] != 0:
-                                                    prob_cost[u] = (t_label_prob*attri[0], attri[1])
+                                                    prob_cost[u] = ([attri[0],t_label_prob], attri[1], [0,0])
                                             if prob_cost.keys():
-                                                self.add_edge(f_prod_node, t_prod_node, prop=prob_cost) 
+                                                self.add_edge(f_prod_node, t_prod_node, prop=prob_cost)                
                 self.build_acc()
                 print "-------Prod DRA Constructed-------"
                 print "%s states, %s edges and %s accepting pairs" %(str(len(self.nodes())), str(len(self.edges())), str(len(self.graph['accept'])))
+
+
+        def compute_mean_sigma(self):
+            print '-----compute mean sigma start ----------'
+            for f_node in self.nodes_iter():
+                for f_u in self.node[f_node]['act'].copy():
+                    # mdp_s
+                    alpha_1 = []
+                    b_1 = []
+                    # mdp_label
+                    alpha_2 = []
+                    b_2 = []
+                    for t_node in self.successors_iter(f_node):
+                        e_prop = self.edge[f_node][t_node]['prop']
+                        if f_u in e_prop:
+                            #----------
+                            if t_node[0] not in b_1:
+                                b_1.append(t_node[0])
+                                alpha_1.append(e_prop[0][0])
+                            if t_node[1] not in b_2:
+                                b_2.append(t_node[1])
+                                alpha_2.append(e_prop[0][1])
+                    d1 = dirichlet_dist(alpha_1, b_1)
+                    d2 = dirichlet_dist(alpha_2, b_2)
+                    prod_d = prod_dirichlet(d1, d2)
+                    mean_b, sigma_b = prod_dirichlet.est_mean_sigma
+                    for t_node in self.successors_iter(f_node):
+                        e_prop = self.edge[f_node][t_node]['prop']
+                        if f_u in e_prop:                            
+                            mean = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
+                            sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
+                            e_prop[f_u][2] = [mean, sigma]
+            print '-----compute mean sigma done ----------'
+                    
 
                 
 	def composition(self, mdp_node, mdp_label, dra_node):

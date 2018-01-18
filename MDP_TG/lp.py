@@ -464,21 +464,21 @@ def syn_return_plan(prod_mdp, S_h):
         V = defaultdict(float)
         model = Model('return_plan')
         # create variables
-        for s in prod_mdp.nodes():
+        for s in prod_mdp.nodes_iter():
             V[s] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='v[%s]' %s)
         model.update()
         print 'Variables added'
         # --------------------
         # set objective
         obj = 0
-        for s in prod_mdp.nodes():
+        for s in prod_mdp.nodes_iter():
             obj += V[s]
         model.setObjective(obj, GRB.MINIMIZE)
         print 'Objective function set'
         # add constraints
         #------------------------------        
         #--------------------
-        for s in prod_mdp.nodes():
+        for s in prod_mdp.nodes_iter():
             if s in S_h:
                 model.addConstr(V[s] == 1.0, 'goal_node_value')
             for u in prod_mdp.node[s]['act']:
@@ -505,7 +505,7 @@ def syn_return_plan(prod_mdp, S_h):
         #------------------------------
         print '--optimization done--'
         V_return = dict()
-        for s in prod_mdp.nodes():
+        for s in prod_mdp.nodes_iter():
             V_return[s] = V[s].X
         print '--value function returned--'
         return V_return

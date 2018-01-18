@@ -27,7 +27,7 @@ class prod_dirichlet(object):
         self.d_1 = d1
         self.d_2 = d2
 
-    def est_mean(self, N=100):
+    def est_mean_sigma(self, N=100):
         s1 = self.d_1.sample(N)
         s2 = self.d_2.sample(N)
         N_1 = len(self.d_1.b)
