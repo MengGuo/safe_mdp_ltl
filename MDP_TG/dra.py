@@ -7,7 +7,7 @@ from numpy import random
 from mdp import find_MECs, find_SCCs
 from ltl2dra import parse_dra, run_ltl2dra
 
-from dirichlet import dirichlet_dist, prod_dirichlet
+from dirichlet import est_mean_sigma
 
 
 from lp import act_by_plan, rd_act_by_plan
@@ -81,25 +81,25 @@ class Product_Dra(DiGraph):
                 self.graph['U'] = mdp.graph['U']
                 print "-------Prod DRA Initialized-------"
                 self.build_full()
+                self.dirichlet = None
 
                 
 	def build_full(self):
             #----construct full product---- 
-		for f_mdp_node in self.graph['mdp'].nodes_iter():
-                    for f_mdp_label, f_label_prob in self.graph['mdp'].node[f_mdp_node]['label'].iteritems():
+		for f_x in self.graph['mdp'].nodes_iter():
+                    for f_mdp_label, f_label_prob in self.graph['mdp'].node[f_x]['label'].iteritems():
 			for f_dra_node in self.graph['dra'].nodes_iter():
-			    f_prod_node = self.composition(f_mdp_node, f_mdp_label, f_dra_node)
-			    for t_mdp_node in self.graph['mdp'].successors_iter(f_mdp_node):
-                                mdp_edge = self.graph['mdp'][f_mdp_node][t_mdp_node]
-                                for t_mdp_label, t_label_prob in self.graph['mdp'].node[t_mdp_node]['label'].iteritems():
+			    f_prod_node = self.composition(f_x, f_mdp_label, f_dra_node)
+			    for t_x in self.graph['mdp'].successors_iter(f_x):
+                                mdp_edge = self.graph['mdp'][f_x][t_x]
+                                for t_mdp_label, t_label_prob in self.graph['mdp'].node[t_x]['label'].iteritems():
 				    for t_dra_node in self.graph['dra'].successors_iter(f_dra_node):
-					t_prod_node = self.composition(t_mdp_node, t_mdp_label, t_dra_node)
+					t_prod_node = self.composition(t_x, t_mdp_label, t_dra_node)
 					truth = self.graph['dra'].check_label_for_dra_edge(f_mdp_label, f_dra_node, t_dra_node)
                                         if truth:
                                             prob_cost = dict()
                                             for u, attri in mdp_edge['prop'].iteritems():
-                                                if t_label_prob*attri[0] != 0:
-                                                    prob_cost[u] = ([attri[0],t_label_prob], attri[1], [0,0])
+                                                prob_cost[u] = (0, 0, attri[1]) # mean_p, sigma, cost
                                             if prob_cost.keys():
                                                 self.add_edge(f_prod_node, t_prod_node, prop=prob_cost)                
                 self.build_acc()
@@ -107,38 +107,81 @@ class Product_Dra(DiGraph):
                 print "%s states, %s edges and %s accepting pairs" %(str(len(self.nodes())), str(len(self.edges())), str(len(self.graph['accept'])))
 
 
+        def init_dirichlet(self):
+            print '-----initial dirichlet start ----------'
+            s_u_p = dict()
+            s_l_p = dict()
+            for f_x in self.graph['mdp'].nodes_iter():
+                s_l_p[f_x] = self.graph['mdp'].node[f_x]['label']            
+                for f_u in self.graph['mdp'].node[f_x]['act'].copy():
+                    suc_s_p = dict()
+                    for t_x in self.successors_iter(f_x):
+                        suc_s_p[t_x] = self.graph['mdp'].edge[f_x][t_x]['prop'][f_u][0]
+                    s_u_p[(f_x, f_u)] = suc_s_p.copy()
+            self.dirichlet = [s_u_p, s_l_p]
+            print '-----dirichlet computed ----------'
+
+            
         def compute_mean_sigma(self):
-            print '-----compute mean sigma start ----------'
+            print '-----initial compute mean sigma start ----------'
+            if not self.dirichlet:
+                print '-----no dirichlet, please run init_dirichlet ----------'
+            else:
+                for f_node in self.nodes_iter():
+                    for f_u in self.node[f_node]['act'].copy():
+                        f_x = f_node[0]
+                        mean_b, sigma_b = est_mean_sigma(self.dirichlet, f_x, f_u)
+                        #---------- update mean, sigma
+                        for t_node in self.successors_iter(f_node):
+                            e_prop = self.edge[f_node][t_node]['prop']
+                            if f_u in e_prop:                            
+                                mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
+                                sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
+                                self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
+                                self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+            print '-----initial computation of mean sigma done----------'
+
+
+        def update_mean_sigma(self, s_p, l_p):
+            #--------------------
+            # s_p={(x,u,x'):k,}
+            # l_p={(x,l):k,}
+            print '-----update mean sigma start %d s_p pair, %d l_p pair----------' %(len(s_p), len(l_p))
+            #----------
+            for key, value in s_p.iteritems():
+                f_x, f_u, t_x = key[:]
+                self.dirichlet[0][(f_x,f_u)][t_x] += value
+            #----------
+            for key, value in l_p.iteritems():
+                x, l = key[:]
+                self.dirichlet[1][x][l] += value
+            #----------                
             for f_node in self.nodes_iter():
+                f_x = f_node[0]
                 for f_u in self.node[f_node]['act'].copy():
-                    # mdp_s
-                    alpha_1 = []
-                    b_1 = []
-                    # mdp_label
-                    alpha_2 = []
-                    b_2 = []
+                    modified = False
                     for t_node in self.successors_iter(f_node):
+                        t_x = t_node[0]
+                        t_l = t_node[1]
                         e_prop = self.edge[f_node][t_node]['prop']
-                        if f_u in e_prop:
-                            #----------
-                            if t_node[0] not in b_1:
-                                b_1.append(t_node[0])
-                                alpha_1.append(e_prop[0][0])
-                            if t_node[1] not in b_2:
-                                b_2.append(t_node[1])
-                                alpha_2.append(e_prop[0][1])
-                    d1 = dirichlet_dist(alpha_1, b_1)
-                    d2 = dirichlet_dist(alpha_2, b_2)
-                    prod_d = prod_dirichlet(d1, d2)
-                    mean_b, sigma_b = prod_dirichlet.est_mean_sigma
+                        if (f_u in e_prop):
+                            if (((t_x,t_l) in l_p) or ((f_x, f_u, t_x) in s_p)):
+                                if ((f_x, f_u, t_x) in s_p):
+                                    print '-----transition p at (%s,%s,%s) changed-----' %(str(f_x), str(f_u), str(t_x))
+                                if ((t_x, t_l) in l_p):
+                                    print '-----label p at (%s,%s) changed-----' %(str(t_x), str(t_l))
+                                modified = True
+                    if modified:
+                        mean_b, sigma_b = est_mean_sigma(self.dirichlet, f_x, f_u)
+                    #---------- update mean, sigma
                     for t_node in self.successors_iter(f_node):
                         e_prop = self.edge[f_node][t_node]['prop']
                         if f_u in e_prop:                            
-                            mean = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
+                            mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                             sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                            e_prop[f_u][2] = [mean, sigma]
-            print '-----compute mean sigma done ----------'
-                    
+                            self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
+                            self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+            print '-----update mean sigma done----------'
 
                 
 	def composition(self, mdp_node, mdp_label, dra_node):
