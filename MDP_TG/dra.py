@@ -99,7 +99,7 @@ class Product_Dra(DiGraph):
                                         if truth:
                                             prob_cost = dict()
                                             for u, attri in mdp_edge['prop'].iteritems():
-                                                prob_cost[u] = (0, 0, attri[1]) # mean_p, sigma, cost
+                                                prob_cost[u] = (0, 0, attri[1], 0) # mean_p, sigma, cost, xi
                                             if prob_cost.keys():
                                                 self.add_edge(f_prod_node, t_prod_node, prop=prob_cost)                
                 self.build_acc()
@@ -133,12 +133,17 @@ class Product_Dra(DiGraph):
                         mean_b, sigma_b = est_mean_sigma(self.dirichlet, f_x, f_u)
                         #---------- update mean, sigma
                         for t_node in self.successors_iter(f_node):
+                            t_x = t_node[0]
+                            t_l = t_node[1]
                             e_prop = self.edge[f_node][t_node]['prop']
-                            if f_u in e_prop:                            
+                            if f_u in e_prop:
+                                k_x_u = self.dirichlet[0][(f_x,f_u)][t_x]
+                                k_x_l = self.dirichlet[1][t_x][t_l]
                                 mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
                                 self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+                                self.edge[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
             print '-----initial computation of mean sigma done----------'
 
 
@@ -176,11 +181,14 @@ class Product_Dra(DiGraph):
                     #---------- update mean, sigma
                     for t_node in self.successors_iter(f_node):
                         e_prop = self.edge[f_node][t_node]['prop']
-                        if f_u in e_prop:                            
+                        if f_u in e_prop:
+                            k_x_u = self.dirichlet[0][(f_x,f_u)][t_x]
+                            k_x_l = self.dirichlet[1][t_x][t_l]
                             mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                             sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                             self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
                             self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+                            self.edge[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
             print '-----update mean sigma done----------'
 
                 
