@@ -9,7 +9,7 @@ from networkx import strongly_connected_component_subgraphs
 class Motion_MDP(DiGraph):
     #----construct probabilistic-labeled MDP----
     def __init__(self, node_dict, edge_dict, U, initial_node, initial_label):
-        DiGraph.__init__(self, name='motion_mdp', init_state=initial_node, init_label=initial_label)
+        DiGraph.__init__(self, name='motion_mdp', init_state=initial_node, init_label=initial_label, home=home_states)
         for (n, prob_label) in node_dict.iteritems():
             self.add_node(n, label = prob_label, act = set())
         print "-------Motion MDP Initialized-------"
@@ -44,6 +44,10 @@ class Motion_MDP(DiGraph):
             else:
                 print 'Isolated state'
         print "-------Motion MDP Constructed-------"
+
+    def set_gamma(self, gamma):
+        # gamma_o, gamma_r
+        self.graph['gamma'] = gamma
 
     def unify_mdp(self):
         #----verify the probability sums up to 1----

@@ -8,17 +8,14 @@ from collections import defaultdict
 import random
 
 
-def real_time_run(prod_mdp, gamma, S_h):
-    init_node = list(prod_mdp.graph['initial'])[0]
-    k = 0
+def syn_real_time_plan(prod_mdp, gamma, init_node, S_h):
     try:
-        while True:
-            V_return = syn_return_plan(prod_mdp, S_h)
-            prod_mdp.v_return = V_return.copy()
-            best_all_plan = syn_full_plan(prod_mdp, gamma, init_node)
-            u, seg = act_by_plan(prod_mdp, best_plan, init_node)            
+        prod_mdp.v_return = syn_return_plan(prod_mdp, S_h)
+        best_all_plan = syn_full_plan(prod_mdp, gamma, init_node)
+        return best_all_plan
     except KeyboardInterrupt:
-        print '-----interrupted!-----'
+        print '-----interrupted plan synthesis!-----'
+        return None
 
 def syn_full_plan(prod_mdp, gamma, init_node, alpha=1):
     #----Optimal plan synthesis, total cost over plan prefix and suffix----
@@ -41,7 +38,7 @@ def syn_full_plan(prod_mdp, gamma, init_node, alpha=1):
             best_k_plan = min(plan, key=lambda p: p[0][1] + alpha*p[1][1])
             Plan.append(best_k_plan)
         else: 
-            "No valid found!"
+            "No valid plan found!"
     if Plan:
         print "========================="
         print " || Final compilation  ||"
