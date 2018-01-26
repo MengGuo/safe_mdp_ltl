@@ -156,10 +156,14 @@ class Product_Dra(DiGraph):
             for key, value in s_p.iteritems():
                 f_x, f_u, t_x = key[:]
                 self.graph['dirichlet'][0][(f_x,f_u)][t_x] += value
+                if self.graph['dirichlet'][0][(f_x,f_u)][t_x] <= 0:
+                    self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 1
             #----------
             for key, value in l_p.iteritems():
                 x, l = key[:]
                 self.graph['dirichlet'][1][x][l] += value
+                if self.graph['dirichlet'][1][x][l] <= 0:
+                   self.graph['dirichlet'][1][x][l] = 1 
             #----------                
             for f_node in self.nodes_iter():
                 f_x = f_node[0]

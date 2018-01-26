@@ -527,6 +527,7 @@ def syn_return_plan(prod_mdp, S_h):
     print 'Gurobi starts now'
     print '-----'
     try:
+        #mdp = prod_mdp.graph['mdp']
         V = defaultdict(float)
         model = Model('return_plan')
         # create variables
