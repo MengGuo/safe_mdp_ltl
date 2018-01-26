@@ -575,3 +575,6 @@ def syn_return_plan(prod_mdp, S_h):
             V_return[s] = V[s].X
         print '--value function returned--'
         return V_return
+    except GurobiError:
+        print "Gurobi Error reported"
+        return None

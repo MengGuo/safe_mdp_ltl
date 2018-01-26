@@ -23,14 +23,15 @@ class sensor(object):
         l_p = dict()            
         f_x = current_state[0]
         # --------------------
-        for x in prod_mdp.nodes():
+        for prod_node in prod_mdp.nodes():
+            x = prod_node[0]
             dist_xy = distance(f_x, x)
             if (dist_xy < self.raidus):
                 # height
                 real_height = self.real_map.node[x]['height']
                 meas_height = real_height *(1 + randam()*self.decay*dist_xy)
                 prod_mdp.graph['mdp'].node[x]['height'] = meas_height
-                prod_mdp.node[x]['height'] = meas_height
+                prod_mdp.node[prod_node]['height'] = meas_height
                 # labels
                 for key,value in self.real_map.node[x]['label'].iteritems():
                     l_p[key] = value

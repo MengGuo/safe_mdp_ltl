@@ -9,7 +9,7 @@ def blur_feature(n_xy, blur, features):
     # to find blurred feature 
     n_x = n_xy[0]
     n_y = n_xy[1]
-    for key, value in features:
+    for key, value in features.iteritems():
         f_x, f_y = key[:]        
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
             return value
@@ -20,7 +20,7 @@ def blur_height(n_xy, blur, heights):
     # to find blurred height
     n_x = n_xy[0]
     n_y = n_xy[1]
-    for key, value in heights:
+    for key, value in heights.iteritems():
         f_x, f_y = key[:]        
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
             return value
@@ -28,19 +28,19 @@ def blur_height(n_xy, blur, heights):
 
 
 
-def construct_node(label_set, features, heights, blur):
-    node_dict = dict()
-    real_node_dict = dict()
+def construct_nodes(L, N, label_set, features, heights, blur):
+    ws_nodes = dict()
+    real_ws_nodes = dict()
     for n_x in range(N):
         for n_y in range(N):
             n_xy = (n_x+1, n_y+1)
-            node_xy = (l*(2*n_x+1), l*(2*n_y+1))
+            node_xy = (L*(2*n_x+1), L*(2*n_y+1))
             # ---------- initial map
             feat = blur_feature(n_xy, blur, features)
             label = dict()
             for l in label_set:
                 if l != frozenset([]):
-                    if l in feat:
+                    if (feat and (l in feat)):
                         label[l] = 3
                     else:
                         label[l] = 1
@@ -49,12 +49,12 @@ def construct_node(label_set, features, heights, blur):
                         label[l] = 3
                     else:
                         label[l] = 1
-            node_dict[node_xy] = [label, ]
+            ws_nodes[node_xy] = [label, ]
             # ---------- real map
             real_label = dict()
             for l in label_set:
                 if (n_xy in features):
-                    if (l == features[node_xy]):
+                    if (l == features[n_xy]):
                         real_label[l] = 10
                     else:
                         real_label[l] = 1
@@ -63,16 +63,91 @@ def construct_node(label_set, features, heights, blur):
                         real_label[l] = 1
                     else:
                         real_label[l] = 10
-            real_node_dict[node_xy] = [real_label, ]
+            real_ws_nodes[node_xy] = [real_label, ]
             # ---------- initial height
             ht = blur_height(n_xy, blur, heights)
             if ht:
-                node_dict[node_xy].append(ht)
+                ws_nodes[node_xy].append(ht)
             else:
-                node_dict[node_xy].append(0)
+                ws_nodes[node_xy].append(0)
             # ---------- real height
             if n_xy in heights:
-                real_node_dict[node_xy].append(heights[n_xy])
+                real_ws_nodes[node_xy].append(heights[n_xy])
             else:
-                real_node_dict[node_xy].append(0)
-    return node_dict, real_node_dict
+                real_ws_nodes[node_xy].append(0)
+    robot_nodes = dict()
+    real_robot_nodes = dict()
+    for loc, prop in ws_nodes.iteritems():
+        for d in ['N', 'S', 'E', 'W']:
+            robot_nodes[(loc[0], loc[1], d)] = prop
+    for loc, prop in real_ws_nodes.iteritems():
+        for d in ['N', 'S', 'E', 'W']:
+            real_robot_nodes[(loc[0], loc[1], d)] = prop                    
+    return robot_nodes, real_robot_nodes
+
+
+
+def construct_edges(robot_nodes, U, C, P):
+    P_FR, P_BK, P_TR, P_TL = P[:]
+    robot_edges = dict()
+    for fnode in robot_nodes.iterkeys():
+        fx = fnode[0]
+        fy = fnode[1]
+        fd = fnode[2]
+        # action FR
+        u = U[0]
+        c = C[0]
+        if fd == 'N':
+            t_nodes = [(fx-2*l, fy+2*l, fd), (fx, fy+2*l, fd), (fx+2*l, fy+2*l, fd)]
+        if fd == 'S':
+            t_nodes = [(fx-2*l, fy-2*l, fd), (fx, fy-2*l, fd), (fx+2*l, fy-2*l, fd)]
+        if fd == 'E':
+            t_nodes = [(fx+2*l, fy-2*l, fd), (fx+2*l, fy, fd), (fx+2*l, fy+2*l, fd)]
+        if fd == 'W':
+            t_nodes = [(fx-2*l, fy-2*l, fd), (fx-2*l, fy, fd), (fx-2*l, fy+2*l, fd)]
+        for k, tnode in enumerate(t_nodes):
+            if tnode in robot_nodes.keys():
+                robot_edges[(fnode, u, tnode)] = (P_FR[k], c)
+        # action BK
+        u = U[1]
+        c = C[1]
+        if fd == 'N':
+            t_nodes = [(fx-2*l, fy-2*l, fd), (fx, fy-2*l, fd), (fx+2*l, fy-2*l, fd)]
+        if fd == 'S':
+            t_nodes = [(fx-2*l, fy+2*l, fd), (fx, fy+2*l, fd), (fx+2*l, fy+2*l, fd)]
+        if fd == 'E':
+            t_nodes = [(fx-2*l, fy-2*l, fd), (fx-2*l, fy, fd), (fx-2*l, fy+2*l, fd)]
+        if fd == 'W':
+            t_nodes = [(fx+2*l, fy-2*l, fd), (fx+2*l, fy, fd), (fx+2*l, fy+2*l, fd)]                
+        for k, tnode in enumerate(t_nodes):
+            if tnode in robot_nodes.keys():
+                robot_edges[(fnode, u, tnode)] = (P_BK[k], c)
+        # action TR
+        u = U[2]
+        c = C[2]
+        if fd == 'N':
+            t_nodes = [(fx, fy, 'N'), (fx, fy, 'E'), (fx, fy, 'S')]
+        if fd == 'S':
+            t_nodes = [(fx, fy, 'S'), (fx, fy, 'W'), (fx, fy, 'N')]
+        if fd == 'E':
+            t_nodes = [(fx, fy, 'E'), (fx, fy, 'S'), (fx, fy, 'W')]
+        if fd == 'W':
+            t_nodes = [(fx, fy, 'W'), (fx, fy, 'N'), (fx, fy, 'E')]
+        for k, tnode in enumerate(t_nodes):
+            if tnode in robot_nodes.keys():
+                robot_edges[(fnode, u, tnode)] = (P_TR[k], c)
+        # action TL
+        u = U[3]
+        c = C[3]
+        if fd == 'S':
+            t_nodes = [(fx, fy, 'S'), (fx, fy, 'E'), (fx, fy, 'N')]
+        if fd == 'N':
+            t_nodes = [(fx, fy, 'N'), (fx, fy, 'W'), (fx, fy, 'S')]
+        if fd == 'W':
+            t_nodes = [(fx, fy, 'W'), (fx, fy, 'S'), (fx, fy, 'E')]
+        if fd == 'E':
+            t_nodes = [(fx, fy, 'E'), (fx, fy, 'N'), (fx, fy, 'W')]
+        for k, tnode in enumerate(t_nodes):
+            if tnode in robot_nodes.keys():
+                robot_edges[(fnode, u, tnode)] = (P_TL[k], c)
+        return robot_edges

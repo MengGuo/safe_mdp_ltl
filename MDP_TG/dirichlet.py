@@ -61,7 +61,7 @@ def est_mean_sigma(dirichlet, f_x, f_u, N=100):
     for key,value in out_come.iteritems():
         mean_p = sum(value)/(N*N)
         mean_b[key] = mean_p
-        dif_v = [v-mean_p, for v in value]
+        dif_v = [v-mean_p for v in value]
         neg_dif_v = []
         for v in dif_v:
             if v>0:
