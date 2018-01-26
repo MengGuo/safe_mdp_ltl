@@ -40,13 +40,14 @@ class sensor(object):
         for t_x in prod_mdp.graph['mdp'].successors_iter(f_x):
             dist_xy = distance(f_x, t_x)
             t_height = prod_mdp.graph['mdp'].node[t_x]['height']
-            dif_height = abs(t_height-f_height)
+            dif_height = t_height-f_height
             if ((dist_xy >0) and (slope[0]<=atan2(dif_height, dist_xy)<=slope[1])):
                 prop = prod_mdp.graph['mdp'].edge[f_x][t_x]['prop']
                 real_prop = self.real_map.edge[f_x][t_x]['prop']
                 for u in prop.keys():
                     s_p[(f_x, u, t_x)] = real_prop[u][0]
-            elif ((dist_xy == 0) or (atan2(dif_height, dist_xy)>slope[1])):
+            elif ((dist_xy == 0) or (atan2(dif_height, dist_xy)>slope[1])
+                  or (atan2(dif_height, dist_xy)<slope[0])):
                 prop = prod_mdp.graph['mdp'].edge[f_x][t_x]['prop']
                 real_prop = self.real_map.edge[f_x][t_x]['prop']
                 for u in prop.keys():

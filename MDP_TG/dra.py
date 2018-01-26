@@ -77,13 +77,13 @@ class Dra(DiGraph):
 #----------------------------------------------------------------------
 class Product_Dra(DiGraph):
 	def __init__(self, mdp, dra):
-		DiGraph.__init__(self, mdp=mdp, dra=dra, initial=set(), accept=[], name='Product_Dra')
+		DiGraph.__init__(self, mdp=mdp, dra=dra, initial=set(), accept=[], name='Product_Dra', gamma=[0, 0])
                 self.graph['U'] = mdp.graph['U']
                 print "-------Prod DRA Initialized-------"
-                self.build_full()
                 self.graph['dirichlet'] = None
-                self.graph['gamma'] = mdp.graph['gamma']
+                self.graph['gamma'] = gamma
                 self.graph['home'] = set()
+                self.build_full()
                 
                 
 	def build_full(self):
@@ -124,7 +124,7 @@ class Product_Dra(DiGraph):
             print '-----dirichlet computed ----------'
 
             
-        def compute_mean_sigma(self):
+        def compute_init_mean_sigma(self):
             print '-----initial compute mean sigma start ----------'
             if not self.graph['dirichlet']:
                 print '-----no dirichlet, please run init_dirichlet ----------'
