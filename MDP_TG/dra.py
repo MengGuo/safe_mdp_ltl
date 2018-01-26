@@ -82,7 +82,9 @@ class Product_Dra(DiGraph):
                 print "-------Prod DRA Initialized-------"
                 self.build_full()
                 self.graph['dirichlet'] = None
-                self.graph['gamma'] = mdp.graph['gamma']                
+                self.graph['gamma'] = mdp.graph['gamma']
+                self.graph['home'] = set()
+                
                 
 	def build_full(self):
             #----construct full product---- 
@@ -200,7 +202,8 @@ class Product_Dra(DiGraph):
 		prod_node = (mdp_node, mdp_label, dra_node)
 		if not self.has_node(prod_node):
                         Us = self.graph['mdp'].node[mdp_node]['act'].copy()
-			self.add_node(prod_node, mdp=mdp_node, label= mdp_label, dra=dra_node, act= Us)
+                        ht = self.graph['mdp'].node[mdp_node]['height'].copy()
+			self.add_node(prod_node, mdp=mdp_node, label= mdp_label, dra=dra_node, act= Us, height=ht)
 			if ((mdp_node == self.graph['mdp'].graph['init_state']) and
                             (mdp_label == self.graph['mdp'].graph['init_label']) and 
                             (dra_node in self.graph['dra'].graph['initial'])):
