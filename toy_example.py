@@ -1,5 +1,5 @@
 from MDP_TG.mdp import Motion_MDP
-from MDP_TG.dra import Dra, Product_Dra
+from MDP_TG.dra import Dra, Product_Dra,  execution_with_sensing
 from MDP_TG.lp import syn_full_plan
 from MDP_TG.vis import visualize_run
 from MDP_TG.sense import sensor
@@ -34,15 +34,17 @@ home_states = set([((2*n_x-1)*l, (2*n_x-1)*l, d) for (n_x, n_y) in home_xy for d
 
 U = [tuple('FR'), tuple('BK'), tuple('TR'), tuple('TL')]
 C = [3.0, 6.0, 5.0, 5.0]
-P_FR = [1, 8, 1]
-P_BK = [2, 6, 2]
+P_FR = [1, 8, 1, 1]
+P_BK = [2, 6, 2, 1]
 P_TR = [1, 8, 1]
 P_TL = [1, 8, 1]
 P = [P_FR, P_BK, P_TR, P_TL]
-robot_edges = construct_edges(robot_nodes, U, C, P)
+robot_edges = construct_edges(robot_nodes, l, U, C, P)
 
 #-------------
+print '---------- Construct robot mdp ----------'
 robot_mdp = Motion_MDP(robot_nodes, robot_edges, U, initial_node, initial_label, home_states)
+print '---------- Construct real robot mdp ----------'
 real_mdp = Motion_MDP(real_robot_nodes, robot_edges, U, initial_node, initial_label, home_states)
 t2 = time.time()
 print '------------------------------'
@@ -90,7 +92,7 @@ print 'Compute init_mean_sigma done, time: %s' %str(t44-t43)
 
 #------
 total_T = 2
-X, L, U, M, PX = prod_dra.execution_with_sensing(sensor, total_T)
+X, L, U, M, PX = execution_with_sensing(prod_dra, robot_sensor, total_T)
 t5 = time.time()
 print '------------------------------'
 print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t42))

@@ -532,7 +532,7 @@ def syn_return_plan(prod_mdp, S_h):
         model = Model('return_plan')
         # create variables
         for s in prod_mdp.nodes_iter():
-            V[s] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='v[%s]' %s)
+            V[s] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='v[%s]' %str(s))
         model.update()
         print 'Variables added'
         # --------------------

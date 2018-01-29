@@ -20,7 +20,7 @@ class  dirichlet_dist(object):
 
 
         
-def est_mean_sigma(dirichlet, f_x, f_u, N=100):
+def est_mean_sigma(dirichlet, f_x, f_u, N=10):
     s_u_p, s_l_p = dirichlet[:]
     t_x_k = s_u_p[(f_x,f_u)]
     b_1 = t_x_k.keys()
@@ -39,19 +39,19 @@ def est_mean_sigma(dirichlet, f_x, f_u, N=100):
         #--------------------        
         for n1 in range(N_1):
             for n2 in range(N_2):
-                b1 = d_1[n1]
-                b2 = d_2[n2]
+                b1 = b_1[n1]
+                b2 = b_2[n2]
                 b = (b1, b2)
-                outcome[b] = []
+                out_come[b] = []
         for i in range(N):
             for j in range(N):
                 p1 = s1[i]
                 p2 = s2[j]
                 for n1 in range(N_1):
                     for n2 in range(N_2):
-                        b1 = d_1[n1]
-                        b2 = d_2[n2]
-                        b = (b1,b2)
+                        b1 = b_1[n1]
+                        b2 = b_2[n2]
+                        b = (b1, b2)
                         if b not in out_come:
                             out_come[b] = [p1[n1]*p2[n2], ]
                         else:

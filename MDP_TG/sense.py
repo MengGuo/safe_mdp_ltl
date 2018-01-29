@@ -14,7 +14,7 @@ class sensor(object):
         self.decay = decay
         self.slope = slope
 
-    def measure_by_sense(prod_mdp, current_state):
+    def measure_by_sense(self, prod_mdp, current_state):
         # measurement from the sensor
         # s_p={(x,u,x'):k,}
         # l_p={(x,l):k,}
@@ -26,17 +26,18 @@ class sensor(object):
         for prod_node in prod_mdp.nodes():
             x = prod_node[0]
             dist_xy = distance(f_x, x)
-            if (dist_xy < self.raidus):
+            if (dist_xy < self.radius):
                 # height
                 real_height = self.real_map.node[x]['height']
-                meas_height = real_height *(1 + randam()*self.decay*dist_xy)
+                meas_height = real_height *(1 + random()*self.decay*dist_xy)
                 prod_mdp.graph['mdp'].node[x]['height'] = meas_height
                 prod_mdp.node[prod_node]['height'] = meas_height
                 # labels
                 for key,value in self.real_map.node[x]['label'].iteritems():
-                    l_p[key] = value
+                    l_p[(x, key)] = value
         # for height difference
         # --------------------
+        slope = self.slope
         f_height = prod_mdp.graph['mdp'].node[x]['height'] 
         for t_x in prod_mdp.graph['mdp'].successors_iter(f_x):
             dist_xy = distance(f_x, t_x)
@@ -47,13 +48,16 @@ class sensor(object):
                 real_prop = self.real_map.edge[f_x][t_x]['prop']
                 for u in prop.keys():
                     s_p[(f_x, u, t_x)] = real_prop[u][0]
-            elif ((dist_xy == 0) or (atan2(dif_height, dist_xy)>slope[1])
-                  or (atan2(dif_height, dist_xy)<slope[0])):
+            elif ((dist_xy > 0) and ((atan2(dif_height, dist_xy)>slope[1])
+                  or (atan2(dif_height, dist_xy)<slope[0]))):
                 prop = prod_mdp.graph['mdp'].edge[f_x][t_x]['prop']
                 real_prop = self.real_map.edge[f_x][t_x]['prop']
                 for u in prop.keys():
                     s_p[(f_x, u, t_x)] = -real_prop[u][0]
-                    s_p[(f_x, u, f_x)] = real_prop[u][0]
+            elif (dist_xy == 0):
+                prop = prod_mdp.graph['mdp'].edge[f_x][t_x]['prop']
+                real_prop = self.real_map.edge[f_x][t_x]['prop']
+                for u in prop.keys():
+                    s_p[(f_x, u, t_x)] = real_prop[u][0]
         return s_p, l_p
-
-    
+        
