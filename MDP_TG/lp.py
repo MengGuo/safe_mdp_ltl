@@ -21,6 +21,7 @@ def syn_full_plan(prod_mdp, gamma, init_node, alpha=1):
     #----Optimal plan synthesis, total cost over plan prefix and suffix----
     print "==========[Optimal full plan synthesis start]=========="
     Plan = []
+    print 'number of S_fi: %d' %len(prod_mdp.Sf)
     for l, S_fi in enumerate(prod_mdp.Sf):
         print "---for one S_fi---"
         plan = []
@@ -91,7 +92,6 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
         print 'Gurobi starts now'
         print '-----'
         try:
-        #if True:
             Y = defaultdict(float)
             model = Model('plan_prefix')
             # create variables
@@ -139,7 +139,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
-                    v = prod_mdp.V_return[t]
+                    v = prod_mdp.V_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)]*pe*(v+sigma)
             #model.addConstr(y_to_sf+y_to_sd >= delta, 'sum_out')
@@ -239,7 +239,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
-                    v = prod_mdp.V_return[t]
+                    v = prod_mdp.V_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)].X*pe*(v+sigma)
             print "----safety computed: %s for given gamma_r %s" %(str(y_to_return), gamma_r)
@@ -248,7 +248,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             print "Gurobi Error reported"
             return None, None, None, None, None, None
     else:
-        print 'No initial node specified in prefix'
+        print '----- init node not in PREFIX ------'
         return None, None, None, None, None, None
 
 def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
@@ -350,7 +350,7 @@ def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
-                    v = prod_mdp.V_return[t]
+                    v = prod_mdp.V_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)]*pe*(v+sigma)
             #model.addConstr(y_to_sf+y_to_sd >= delta, 'sum_out')
@@ -409,7 +409,7 @@ def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
-                    v = prod_mdp.V_return[t]
+                    v = prod_mdp.V_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)].X*pe*(v+sigma)
             print "----safety computed: %s for given gamma_r %s" %(str(y_to_return), gamma_r)
@@ -527,36 +527,38 @@ def syn_return_plan(prod_mdp, S_h):
     print 'Gurobi starts now'
     print '-----'
     try:
-        #mdp = prod_mdp.graph['mdp']
+        mdp = prod_mdp.graph['mdp']
+        s_h = mdp.graph['home']
         V = defaultdict(float)
         model = Model('return_plan')
         # create variables
-        for s in prod_mdp.nodes_iter():
+        for s in mdp.nodes_iter():
             V[s] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='v[%s]' %str(s))
         model.update()
         print 'Variables added'
         # --------------------
         # set objective
         obj = 0
-        for s in prod_mdp.nodes_iter():
+        for s in mdp.nodes_iter():
             obj += V[s]
-        model.setObjective(obj, GRB.MINIMIZE)
+        model.setObjective(obj, GRB.MAXIMIZE)
         print 'Objective function set'
         # add constraints
         #------------------------------        
         #--------------------
-        for s in prod_mdp.nodes_iter():
-            if s in S_h:
+        for s in mdp.nodes_iter():
+            if s in s_h:
                 model.addConstr(V[s] == 1.0, 'goal_node_value')
             else:
-                for u in prod_mdp.node[s]['act']:
+                for u in mdp.node[s]['act']:
                     sigma = 0
                     suc_V = 0
-                    for t in prod_mdp.successors_iter(s):
-                        prop = prod_mdp.edge[s][t]['prop']
-                        sigma += prop[u][0]*prop[u][1]                
-                        suc_V += prop[u][0]*V[t]
-                    model.addConstr(V[s] >= sigma + suc_V, 'bellman_balance')
+                    for t in mdp.successors_iter(s):
+                        prop = mdp.edge[s][t]['prop']
+                        if u in prop.keys():
+                            sigma += prop[u][0]*prop[u][1]
+                            suc_V += prop[u][0]*V[t]
+                    model.addConstr(V[s] <= sigma + suc_V, 'bellman_balance')
         print 'Goal node value added'
         print 'Bellman balanced'
         #----------------------
@@ -567,11 +569,11 @@ def syn_return_plan(prod_mdp, S_h):
         # print '--variables value--'
         # for v in model.getVars():
         #     print v.varName, v.x
-        # print 'obj:', model.objVal
+        print 'obj:', model.objVal
         #------------------------------
         print '--optimization done--'
         V_return = dict()
-        for s in prod_mdp.nodes_iter():
+        for s in mdp.nodes_iter():
             V_return[s] = V[s].X
         print '--value function returned--'
         return V_return

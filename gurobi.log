@@ -1,3 +1,85 @@
 
 Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:00:46 2018
 
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:19:31 2018
+
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:30:35 2018
+
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:34:19 2018
+
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:37:17 2018
+
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:38:18 2018
+
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:39:27 2018
+
+Optimize a model with 4536 rows, 1188 columns and 35438 nonzeros
+Coefficient statistics:
+  Matrix range     [2e-03, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e-17, 1e+00]
+
+Concurrent LP optimizer: dual simplex and barrier
+Showing barrier log only...
+
+Presolve removed 118 rows and 72 columns
+Presolve time: 0.09s
+Presolved: 4418 rows, 1120 columns, 34966 nonzeros
+
+Ordering time: 0.15s
+
+Barrier performed 0 iterations in 0.38 seconds
+Barrier solve interrupted - model solved by another algorithm
+
+
+Solved with dual simplex
+Solved in 592 iterations and 0.38 seconds
+Infeasible model
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 14:52:35 2018
+
+Optimize a model with 244 rows, 64 columns and 476 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 8e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e+00, 7e+01]
+Presolve removed 0 rows and 61 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible model
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 15:09:28 2018
+
+Optimize a model with 244 rows, 64 columns and 476 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 8e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e+00, 7e+01]
+Presolve removed 0 rows and 61 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible model
+
+Gurobi 7.0.2 (linux64, Python) logging started Mon Jan 29 15:15:06 2018
+
+Optimize a model with 244 rows, 64 columns and 476 nonzeros
+Coefficient statistics:
+  Matrix range     [1e+00, 8e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e+00, 7e+01]
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model

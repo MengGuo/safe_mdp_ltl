@@ -150,8 +150,8 @@ class Product_Dra(DiGraph):
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
                                 mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
-                                self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+                                self.edge[f_node][t_node]['prop'][f_u][0] = mean_p[0]
+                                self.edge[f_node][t_node]['prop'][f_u][1] = sigma[0]
                                 self.edge[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
             print '-----initial computation of mean sigma done----------'
 
@@ -191,10 +191,10 @@ class Product_Dra(DiGraph):
                         e_prop = self.edge[f_node][t_node]['prop']
                         if (f_u in e_prop):
                             if (((t_x,t_l) in l_p) or ((f_x, f_u, t_x) in s_p)):
-                                if ((f_x, f_u, t_x) in s_p):
-                                    print '-----transition p at (%s,%s,%s) changed-----' %(str(f_x), str(f_u), str(t_x))
-                                if ((t_x, t_l) in l_p):
-                                    print '-----label p at (%s,%s) changed-----' %(str(t_x), str(t_l))
+                                # if ((f_x, f_u, t_x) in s_p):
+                                #     print '-----transition p at (%s,%s,%s) changed-----' %(str(f_x), str(f_u), str(t_x))
+                                # if ((t_x, t_l) in l_p):
+                                #     print '-----label p at (%s,%s) changed-----' %(str(t_x), str(t_l))
                                 modified = True
                     if modified:
                         mean_b, sigma_b = est_mean_sigma(self.graph['dirichlet'], f_x, f_u)
@@ -208,8 +208,8 @@ class Product_Dra(DiGraph):
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
                                 mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                self.edge[f_node][t_node]['prop'][f_u][0] = mean_p
-                                self.edge[f_node][t_node]['prop'][f_u][1] = sigma
+                                self.edge[f_node][t_node]['prop'][f_u][0] = mean_p[0]
+                                self.edge[f_node][t_node]['prop'][f_u][1] = sigma[0]
                                 self.edge[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
                         #print '-----update mean sigma done----------'
                     # else:
@@ -520,11 +520,11 @@ class Product_Dra(DiGraph):
             
 def execution_with_sensing(prod_mdp, sensor, total_T):
     #----plan execution with or without given observation----
-    print '=============================='
-    print '=============================='
-    print '========Execution starts==========='
-    print '=============================='
-    print '=============================='
+    print '============================================================'
+    print '============================================================'
+    print '========Execution starts===================================='
+    print '============================================================'
+    print '============================================================'
     t = 0            
     X = []
     L = []
