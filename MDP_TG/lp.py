@@ -248,6 +248,12 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
     ip = MEC[1]
     act = MEC[2].copy()
     delta = 1.0
+    y_in_sf = dict()
+    for s in sf:
+        if s == init_node:
+            y_in_sf[s] = 1
+        else:
+            y_in_sf[s] = 0
     if init_node in sf:
         print '---------- init node in SUFFIX ----------'
         paths = single_source_shortest_path(prod_mdp, init_node)
@@ -293,9 +299,8 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
                     if (f in Sn) and (s not in ip):
                         prop = prod_mdp.edge[f][s]['prop'].copy()
                         for uf in act[f]:
-                            if uf in prop.keys():
-                                pe = prop[u][0]
-                                constr4 += Y[(f,uf)]*pe
+                            if uf in prop.keys():  
+                                constr4 += Y[(f,uf)]*prop[uf][0]
                             else:
                                 constr4 += Y[(f,uf)]*0.00
                     if (f in Sn) and (s in ip) and (f != s):
@@ -303,32 +308,48 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
                         for uf in act[f]:
                             if uf in prop.keys():  
                                 constr4 += Y[(f,uf)]*prop[uf][0]
-                if (s not in ip):
+                            else:
+                                constr4 += Y[(f,uf)]*0.00
+                if (s in y_in_sf.keys()) and (s not in ip):
+                    model.addConstr(constr3 == constr4 + y_in_sf[s], 'balance_with_y_in')
+                if (s in y_in_sf.keys()) and (s in ip):
+                    model.addConstr(constr3 == y_in_sf[s], 'balance_with_y_in')
+                if (s not in y_in_sf.keys()) and (s not in ip):
                     model.addConstr(constr3 == constr4, 'balance')
             print 'Balance condition added'
             print 'Initial sf condition added'            
             #--------------------
             y_to_ip = 0.0
+            y_out = 0.0
             for s in Sn:
                 for t in prod_mdp.successors_iter(s):
-                    if t in ip:
+                    if t not in Sn:
+                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        for u in prop.iterkeys():
+                            if u in act[s]:
+                                pe = prop[u][0]
+                                y_out += Y[(s,u)]*pe
+                    elif t in ip:
                         prop = prod_mdp.edge[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
                                 y_to_ip += Y[(s,u)]*pe
-            model.addConstr(y_to_ip >= 1.0, 'sum_out')
+            model.addConstr(y_to_ip+y_out >= 1.0, 'sum_out')
+            model.addConstr(y_to_ip >= (1.0-gamma_o)*(y_to_ip+y_out), 'risk')
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
             for t in prod_mdp.successors_iter(init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
-                    sigma = prop[u][1]
-                    v = prod_mdp.V_return[t[0]]
-                    pe = prop[u][0]
-                    y_to_return += Y[(s,u)]*pe*(v+sigma)
-            model.addConstr(y_to_return >= gamma_r, 'safety')
+                    if u in act[init_node]:
+                        sigma = prop[u][1]
+                        v = prod_mdp.v_return[t[0]]
+                        pe = prop[u][0]
+                        y_to_return += Y[(s,u)]*pe*(v+sigma)
+            #model.addConstr(y_to_return >= gamma_r, 'safety')
+            model.addConstr(y_to_return >= 0.0, 'safety')
             print 'Safety constraint added'
             #------------------------------
             # solve
@@ -383,7 +404,7 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
                 prop = prod_mdp.edge[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
-                    v = prod_mdp.V_return[t[0]]
+                    v = prod_mdp.v_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)].X*pe*(v+sigma)
             print "----safety computed: %s for given gamma_r %s" %(str(y_to_return), gamma_r)

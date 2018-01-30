@@ -72,7 +72,7 @@ print 'DRA done, time: %s' %str(t3-t2)
 
 #----
 print '------------------------------'
-gamma = [0.7, 0.8]
+gamma = [0.7, 0.3] # gamma_o, gamma_r
 prod_dra = Product_Dra(mdp=robot_mdp, dra=dra, gamma=gamma)
 #prod_dra.dotify()
 t41 = time.time()
