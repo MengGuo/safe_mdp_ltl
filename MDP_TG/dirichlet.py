@@ -20,7 +20,7 @@ class  dirichlet_dist(object):
 
 
         
-def est_mean_sigma(dirichlet, f_x, f_u, N=10):
+def est_prod_mean_sigma(dirichlet, f_x, f_u, N=10):
     s_u_p, s_l_p = dirichlet[:]
     t_x_k = s_u_p[(f_x,f_u)]
     b_1 = t_x_k.keys()
@@ -70,6 +70,25 @@ def est_mean_sigma(dirichlet, f_x, f_u, N=10):
                 neg_dif_v.append(v)            
         sigma_b[key] = sum(neg_dif_v)/(N*N)
     return mean_b, sigma_b
+
+
+
+def est_mean_sigma(alpha, b, N=50):
+    d = dirichlet_dist(alpha, b)
+    S = d.sample(N)
+    mean_b = dict()
+    sigma_b = dict()
+    for k, b_k in enumerate(b):
+        mean_b[b_k] = sum([s[k] for s in S])/N        
+        dif_b = [s[k]-mean_b[b_k] for s in S]
+        neg_dif_b = []
+        for b in dif_b:
+            if b>0:
+                neg_dif_b.append(0)
+            else:
+                neg_dif_b.append(b)
+        sigma_b[b_k] = sum(neg_dif_b)/(N)
+    return mean_b, sigma_b    
                         
         
         

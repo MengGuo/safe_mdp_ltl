@@ -4,6 +4,8 @@ from math import sqrt
 from networkx.classes.digraph import DiGraph
 from networkx import strongly_connected_component_subgraphs
 
+from dirichlet import est_mean_sigma
+
 #----------------------------------
 
 class Motion_MDP(DiGraph):
@@ -15,7 +17,7 @@ class Motion_MDP(DiGraph):
         print "-------Motion MDP Initialized-------"
         self.add_edges(edge_dict, U)
         print "%s states and %s edges" %(str(len(self.nodes())), str(len(self.edges())))
-        #self.unify_mdp()
+        self.add_mean_sigma()
         
     def add_edges(self, edge_dict, U):
         self.graph['U'] = set()
@@ -27,11 +29,11 @@ class Motion_MDP(DiGraph):
             t_node = edge[2]
             if (f_node, t_node) in self.edges():
                 prop = self.edge[f_node][t_node]['prop']
-                prop[tuple(u)] = [attri[0], attri[1]]
+                prop[tuple(u)] = [attri[0], attri[1], 0, 0] #k,c,p,sigma
             else:                
                 prob_cost = dict()
                 #--- prob, cost
-                prob_cost[tuple(u)] = [attri[0], attri[1]]
+                prob_cost[tuple(u)] = [attri[0], attri[1], 0, 0]
                 self.add_edge(f_node, t_node, prop = prob_cost)
         #----
         for f_node in self.nodes():
@@ -49,24 +51,25 @@ class Motion_MDP(DiGraph):
         # gamma_o, gamma_r
         self.graph['gamma'] = gamma    
 
-    def unify_mdp(self):
-        #----verify the probability sums up to 1----
+    def add_mean_sigma(self):
         for f_node in self.nodes():
             for u in self.node[f_node]['act']:
-                sum_prob = 0
-                N = 0
+                alpha = []
+                b = []
                 for t_node in self.successors_iter(f_node):
                     prop = self.edge[f_node][t_node]['prop']
                     if u in prop.keys():
-                        sum_prob += prop[u][0]
-                        N += 1
-                if sum_prob < 1.0:
-                    to_add = (1.0-sum_prob)/N
-                    for t_node in self.successors_iter(f_node):
-                        prop = self.edge[f_node][t_node]['prop']
-                        if u in prop.keys():
-                            prop[u][0] += to_add
-        print 'Unify MDP Done'
+                        alpha.append(prop[u][0])
+                        b.append(t_node)
+                # print 'alpha, b', [alpha, b]
+                mean_b, sigma_b = est_mean_sigma(alpha, b)
+                # print 'mean_b, sigma_b', [mean_b, sigma_b]
+                for t_node in self.successors_iter(f_node):
+                    prop = self.edge[f_node][t_node]['prop']
+                    if u in prop.keys():
+                        prop[u][2] = mean_b[t_node]
+                        prop[u][3] = sigma_b[t_node]
+        print 'Add mean and sigma Done'
                     
 #--------------------------------
 def find_MECs(mdp, Sneg):

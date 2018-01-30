@@ -7,7 +7,7 @@ from numpy import random
 from mdp import find_MECs, find_SCCs
 from ltl2dra import parse_dra, run_ltl2dra
 
-from dirichlet import est_mean_sigma
+from dirichlet import est_prod_mean_sigma
 
 
 from lp import act_by_plan, rd_act_by_plan, syn_real_time_plan
@@ -139,7 +139,7 @@ class Product_Dra(DiGraph):
                 for f_node in self.nodes_iter():
                     for f_u in self.node[f_node]['act'].copy():
                         f_x = f_node[0]
-                        mean_b, sigma_b = est_mean_sigma(self.graph['dirichlet'], f_x, f_u)
+                        mean_b, sigma_b = est_prod_mean_sigma(self.graph['dirichlet'], f_x, f_u)
                         #---------- update mean, sigma
                         for t_node in self.successors_iter(f_node):
                             t_x = t_node[0]
@@ -167,19 +167,24 @@ class Product_Dra(DiGraph):
             #----------
             for key, value in s_p.iteritems():
                 f_x, f_u, t_x = key[:]
-                self.graph['dirichlet'][0][(f_x,f_u)][t_x] += value
-                if self.graph['dirichlet'][0][(f_x,f_u)][t_x] <= 0:
+                k_old = self.graph['dirichlet'][0][(f_x,f_u)][t_x]
+                k_old += value
+                if k_old <= 0:
                     self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 1
-                if self.graph['dirichlet'][0][(f_x,f_u)][t_x] >= 100:
-                    self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 100                
+                if k_old >= 100:
+                     self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 100
+                self.graph['mdp'].edge[f_x][t_x]['prop'][f_u][0] =  self.graph['dirichlet'][0][(f_x,f_u)][t_x]
             #----------
             for key, value in l_p.iteritems():
                 x, l = key[:]
-                self.graph['dirichlet'][1][x][l] += value
-                if self.graph['dirichlet'][1][x][l] <= 0:
+                k_old = self.graph['dirichlet'][1][x][l]
+                k_old += value
+                if k_old <= 0:
                    self.graph['dirichlet'][1][x][l] = 1
-                if self.graph['dirichlet'][1][x][l] >= 100:
-                   self.graph['dirichlet'][1][x][l] = 100                    
+                if k_old >= 100:
+                   self.graph['dirichlet'][1][x][l] = 100
+                self.graph['mdp'].node[x]['label'][l] = self.graph['dirichlet'][1][x][l]
+            self.graph['mdp'].add_mean_sigma()
             #----------                
             for f_node in self.nodes_iter():
                 f_x = f_node[0]
@@ -197,7 +202,7 @@ class Product_Dra(DiGraph):
                                 #     print '-----label p at (%s,%s) changed-----' %(str(t_x), str(t_l))
                                 modified = True
                     if modified:
-                        mean_b, sigma_b = est_mean_sigma(self.graph['dirichlet'], f_x, f_u)
+                        mean_b, sigma_b = est_prod_mean_sigma(self.graph['dirichlet'], f_x, f_u)
                     #---------- update mean, sigma
                         for t_node in self.successors_iter(f_node):
                             t_x = t_node[0]
@@ -533,7 +538,6 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
     PX = []
     m = 0
     gamma = prod_mdp.graph['gamma']
-    S_h = prod_mdp.graph['home']
     #----
     while (t <= total_T):
         t0 = time.time()
@@ -572,7 +576,7 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
         prod_mdp.update_mean_sigma(s_p, l_p)
         t3 = time.time()
         print 'Update model done, time: %s' %(str(t3-t2))
-        best_all_plan = syn_real_time_plan(prod_mdp, gamma, current_state, S_h)
+        best_all_plan = syn_real_time_plan(prod_mdp, gamma, current_state)
         t4 = time.time()
         print 'Safe plan synthesis done, time: %s' %(str(t4-t3))
         u, m = act_by_plan(prod_mdp, best_all_plan, current_state)

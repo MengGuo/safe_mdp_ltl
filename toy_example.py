@@ -29,7 +29,7 @@ robot_nodes, real_robot_nodes = construct_nodes(l, N, label_set, features, heigh
 
 initial_node = (l, l, 'N')
 initial_label = frozenset([])
-home_xy = [(4, 1)]
+home_xy = [(4, 4)]
 home_states = set([((2*n_x-1)*l, (2*n_x-1)*l, d) for (n_x, n_y) in home_xy for d in ['N', 'S', 'E', 'W']])
 
 U = [tuple('FR'), tuple('BK'), tuple('TR'), tuple('TL')]

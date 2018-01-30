@@ -8,9 +8,9 @@ from collections import defaultdict
 import random
 
 
-def syn_real_time_plan(prod_mdp, gamma, init_node, S_h):
+def syn_real_time_plan(prod_mdp, gamma, init_node):
     try:
-        prod_mdp.v_return = syn_return_plan(prod_mdp, S_h)
+        prod_mdp.v_return = syn_return_plan(prod_mdp)
         best_all_plan = syn_full_plan(prod_mdp, gamma, init_node)
         return best_all_plan
     except KeyboardInterrupt:
@@ -24,36 +24,21 @@ def syn_full_plan(prod_mdp, gamma, init_node, alpha=1):
     print 'number of S_fi: %d' %len(prod_mdp.Sf)
     for l, S_fi in enumerate(prod_mdp.Sf):
         print "---for one S_fi---"
-        plan = []
         for k, MEC in enumerate(S_fi):
-            plan_prefix, prefix_cost, prefix_risk, y_in_sf, Sr, Sd = syn_plan_prefix(prod_mdp, MEC, gamma, init_node)
-            print "Best plan prefix obtained, cost: %s, risk %s" %(str(prefix_cost), str(prefix_risk))
-            if y_in_sf:
-                plan_suffix, suffix_cost, suffix_risk = syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node)
-                print "Best plan suffix obtained, cost: %s, risk %s" %(str(suffix_cost), str(suffix_risk))
+            sf = MEC[0]
+            if init_node not in sf:
+                print '----- init node in PREFIX ------'
+                plan_prefix, prefix_cost, prefix_risk, y_in_sf, Sr, Sd = syn_plan_prefix(prod_mdp, MEC, gamma, init_node)
+                print "Best plan prefix obtained, cost: %s, risk %s" %(str(prefix_cost), str(prefix_risk))
+                plan_suffix, suffix_cost, suffix_risk = None, None, None
             else:
-                plan_suffix = None
-            if plan_prefix  and plan_suffix:
-                plan.append([[plan_prefix, prefix_cost, prefix_risk, y_in_sf], [plan_suffix, suffix_cost, suffix_risk], [MEC[0], MEC[1], Sr, Sd]])
-        if plan:
-            best_k_plan = min(plan, key=lambda p: p[0][1] + alpha*p[1][1])
-            Plan.append(best_k_plan)
-        else: 
-            "No valid plan found!"
-    if Plan:
-        print "========================="
-        print " || Final compilation  ||"
-        print "========================="
-        best_all_plan = min(Plan, key=lambda p: p[0][1] + alpha*p[1][1])
-        print 'Best plan prefix obtained for %s states in Sr' %str(len(best_all_plan[0][0]))
-        print 'cost: %s; risk: %s '%(best_all_plan[0][1], best_all_plan[0][2])
-        print 'Best plan suffix obtained for %s states in Sf' %str(len(best_all_plan[1][0]))
-        print 'cost: %s; risk: %s '%(best_all_plan[1][1], best_all_plan[1][2])
-        print 'Total cost:%s' %(best_all_plan[0][1] + alpha*best_all_plan[1][1])
-        plan_bad = syn_plan_bad(prod_mdp, best_all_plan[2])
-        print 'Plan for bad states obtained for %s states in Sd' %str(len(best_all_plan[2][3]))
-        best_all_plan.append(plan_bad)
-        return best_all_plan
+                print '----- init node in SUFFIX ------'
+                plan_suffix, suffix_cost, suffix_risk = syn_plan_suffix(prod_mdp, MEC, gamma, init_node)
+                print "Best plan suffix obtained, cost: %s, risk %s" %(str(suffix_cost), str(suffix_risk))
+                plan_prefix, prefix_cost, prefix_risk, y_in_sf, Sr, Sd = None, None, None, None, None, None
+            if plan_prefix  or plan_suffix:
+                plan = [[plan_prefix, prefix_cost, prefix_risk, y_in_sf], [plan_suffix, suffix_cost, suffix_risk], [MEC[0], MEC[1], Sr, Sd]]
+                return plan
     else:
         print "No valid plan found"
         return None
@@ -69,6 +54,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
     sf = MEC[0]
     ip = MEC[1] #force convergence to ip
     delta = 1.0
+    print 'init_node', init_node
+    print 'init node not in sf', (init_node not in sf)
     if init_node not in sf:
         print '----- init node in PREFIX ------'
         path_init = single_source_shortest_path(prod_mdp, init_node)
@@ -251,15 +238,16 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
         print '----- init node not in PREFIX ------'
         return None, None, None, None, None, None
 
-def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
+def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
     #----Synthesize optimal plan suffix to stay within the accepting MEC----
     #----with minimal expected total cost of accepting cyclic paths----
-    print "===========[plan suffix synthesis starts]==========="    
+    print "===========[plan suffix synthesis starts]==========="
+    gamma_o = gamma[0]
+    gamma_r = gamma[1]
     sf = MEC[0]
     ip = MEC[1]
     act = MEC[2].copy()
     delta = 1.0
-    gamma = 0.0
     if init_node in sf:
         print '---------- init node in SUFFIX ----------'
         paths = single_source_shortest_path(prod_mdp, init_node)
@@ -305,8 +293,9 @@ def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
                     if (f in Sn) and (s not in ip):
                         prop = prod_mdp.edge[f][s]['prop'].copy()
                         for uf in act[f]:
-                            if uf in prop.keys():  
-                                constr4 += Y[(f,uf)]*prop[uf][0]
+                            if uf in prop.keys():
+                                pe = prop[u][0]
+                                constr4 += Y[(f,uf)]*pe
                             else:
                                 constr4 += Y[(f,uf)]*0.00
                     if (f in Sn) and (s in ip) and (f != s):
@@ -314,35 +303,21 @@ def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
                         for uf in act[f]:
                             if uf in prop.keys():  
                                 constr4 += Y[(f,uf)]*prop[uf][0]
-                            else:
-                                constr4 += Y[(f,uf)]*0.00
-                if (s in y_in_sf.keys()) and (s not in ip):
-                    model.addConstr(constr3 == constr4 + y_in_sf[s], 'balance_with_y_in')
-                if (s in y_in_sf.keys()) and (s in ip):
-                    model.addConstr(constr3 == y_in_sf[s], 'balance_with_y_in')
-                if (s not in y_in_sf.keys()) and (s not in ip):
+                if (s not in ip):
                     model.addConstr(constr3 == constr4, 'balance')
             print 'Balance condition added'
             print 'Initial sf condition added'            
             #--------------------
             y_to_ip = 0.0
-            y_out = 0.0
             for s in Sn:
                 for t in prod_mdp.successors_iter(s):
-                    if t not in Sn:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
-                        for u in prop.iterkeys():
-                            if u in act[s]:
-                                pe = prop[u][0]                                
-                                y_out += Y[(s,u)]*pe
-                    elif t in ip:
+                    if t in ip:
                         prop = prod_mdp.edge[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
                                 y_to_ip += Y[(s,u)]*pe
-            model.addConstr(y_to_ip+y_out >= delta, 'sum_out')
-            model.addConstr(y_to_ip >= (1.0-gamma)*(y_to_ip+y_out), 'risk')
+            model.addConstr(y_to_ip >= 1.0, 'sum_out')
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
@@ -353,7 +328,6 @@ def syn_plan_suffix(prod_mdp, MEC, y_in_sf, init_node):
                     v = prod_mdp.V_return[t[0]]
                     pe = prop[u][0]
                     y_to_return += Y[(s,u)]*pe*(v+sigma)
-            #model.addConstr(y_to_sf+y_to_sd >= delta, 'sum_out')
             model.addConstr(y_to_return >= gamma_r, 'safety')
             print 'Safety constraint added'
             #------------------------------
@@ -519,7 +493,7 @@ def rd_act_by_plan(prod_mdp, best_plan, prod_state, I):
         return U[k], 2, I
 
         
-def syn_return_plan(prod_mdp, S_h):
+def syn_return_plan(prod_mdp):
     #----Synthesize optimal return plan, given set of home state S_h----
     print "===========[return plan synthesis starts]==========="
     # ---------solve lp------------
@@ -541,12 +515,13 @@ def syn_return_plan(prod_mdp, S_h):
         obj = 0
         for s in mdp.nodes_iter():
             obj += V[s]
-        model.setObjective(obj, GRB.MAXIMIZE)
+        model.setObjective(obj, GRB.MINIMIZE)
         print 'Objective function set'
         # add constraints
         #------------------------------        
         #--------------------
         for s in mdp.nodes_iter():
+            #print 's now', s
             if s in s_h:
                 model.addConstr(V[s] == 1.0, 'goal_node_value')
             else:
@@ -556,9 +531,10 @@ def syn_return_plan(prod_mdp, S_h):
                     for t in mdp.successors_iter(s):
                         prop = mdp.edge[s][t]['prop']
                         if u in prop.keys():
-                            sigma += prop[u][0]*prop[u][1]
-                            suc_V += prop[u][0]*V[t]
-                    model.addConstr(V[s] <= sigma + suc_V, 'bellman_balance')
+                            # print 's,u,t,prop[u]',[s,u,t,prop[u]]
+                            sigma += prop[u][2]*prop[u][3]
+                            suc_V += prop[u][2]*V[t]
+                    model.addConstr(V[s] >= sigma + suc_V, 'bellman_balance')
         print 'Goal node value added'
         print 'Bellman balanced'
         #----------------------
@@ -576,6 +552,7 @@ def syn_return_plan(prod_mdp, S_h):
         for s in mdp.nodes_iter():
             V_return[s] = V[s].X
         print '--value function returned--'
+        # print 'V_return', V_return
         return V_return
     except GurobiError:
         print "Gurobi Error reported"
