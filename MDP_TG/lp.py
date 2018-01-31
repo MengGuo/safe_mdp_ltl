@@ -90,8 +90,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             # set objective
             obj = 0
             for s in Sr:                
-                for t in prod_mdp.successors_iter(s):
-                    prop = prod_mdp.edge[s][t]['prop'].copy()
+                for t in prod_mdp.successors(s):
+                    prop = prod_mdp[s][t]['prop'].copy()
                     for u in prop.iterkeys():
                         xi = prop[u][3]
                         pe = prop[u][0]
@@ -104,15 +104,15 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             y_to_sd = 0.0
             y_to_sf = 0.0
             for s in Sr:
-                for t in prod_mdp.successors_iter(s):
+                for t in prod_mdp.successors(s):
                     if t in Sd:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             sigma = prop[u][1]
                             pe = prop[u][0]
                             y_to_sd += Y[(s,u)]*pe*(1+sigma)
                     elif t in sf:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             sigma = prop[u][1]
                             pe = prop[u][0]
@@ -122,8 +122,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
-            for t in prod_mdp.successors_iter(init_node):
-                prop = prod_mdp.edge[init_node][t]['prop'].copy()
+            for t in prod_mdp.successors(init_node):
+                prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
                     v = prod_mdp.V_return[t[0]]
@@ -138,9 +138,9 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                 node_y_out = 0.0
                 for u in prod_mdp.node[t]['act']:   
                     node_y_out += Y[(t,u)]
-                for f in prod_mdp.predecessors_iter(t):
+                for f in prod_mdp.predecessors(t):
                     if f in Sr:
-                        prop = prod_mdp.edge[f][t]['prop'].copy()
+                        prop = prod_mdp[f][t]['prop'].copy()
                         for uf in prop.iterkeys():
                             node_y_in += Y[(f,uf)]*prop[uf][0]
                 if t == init_node:
@@ -183,14 +183,14 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             y_to_sd = 0.0
             y_to_sf = 0.0
             for s in Sr:
-                for t in prod_mdp.successors_iter(s):
+                for t in prod_mdp.successors(s):
                     if t in Sd:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys(): 
                             pe = prop[u][0]
                             y_to_sd += Y[(s,u)].X*pe
                     elif t in sf:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys(): 
                             pe = prop[u][0]
                             y_to_sf += Y[(s,u)].X*pe
@@ -201,9 +201,9 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             # compute the input flow to the suffix
             y_in_sf = dict()
             for s in Sn:
-                for t in prod_mdp.successors_iter(s):
+                for t in prod_mdp.successors(s):
                     if t in sf:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             pe = prop[u][0]
                             if t not in y_in_sf:
@@ -222,8 +222,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             #print y_in_sf                
             # compute safety
             y_to_return = 0.0
-            for t in prod_mdp.successors_iter(init_node):
-                prop = prod_mdp.edge[init_node][t]['prop'].copy()
+            for t in prod_mdp.successors(init_node):
+                prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
                     v = prod_mdp.V_return[t[0]]
@@ -248,12 +248,6 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
     ip = MEC[1]
     act = MEC[2].copy()
     delta = 1.0
-    y_in_sf = dict()
-    for s in sf:
-        if s == init_node:
-            y_in_sf[s] = 1
-        else:
-            y_in_sf[s] = 0
     if init_node in sf:
         print '---------- init node in SUFFIX ----------'
         paths = single_source_shortest_path(prod_mdp, init_node)
@@ -279,8 +273,8 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
             obj = 0
             for s in Sn:
                 for u in act[s]:
-                    for t in prod_mdp.successors_iter(s):
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                    for t in prod_mdp.successors(s):
+                        prop = prod_mdp[s][t]['prop'].copy()
                         if u in prop.keys():
                             pe = prop[u][0]
                             xi = prop[u][3]
@@ -295,61 +289,58 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
                 constr4 = 0
                 for u in act[s]:
                     constr3 += Y[(s,u)]
-                for f in prod_mdp.predecessors_iter(s):
-                    if (f in Sn) and (s not in ip):
-                        prop = prod_mdp.edge[f][s]['prop'].copy()
+                for f in prod_mdp.predecessors(s):
+                    if (f in Sn):
+                        prop = prod_mdp[f][s]['prop'].copy()
                         for uf in act[f]:
                             if uf in prop.keys():  
                                 constr4 += Y[(f,uf)]*prop[uf][0]
-                            else:
-                                constr4 += Y[(f,uf)]*0.00
-                    if (f in Sn) and (s in ip) and (f != s):
-                        prop = prod_mdp.edge[f][s]['prop'].copy()
-                        for uf in act[f]:
-                            if uf in prop.keys():  
-                                constr4 += Y[(f,uf)]*prop[uf][0]
-                            else:
-                                constr4 += Y[(f,uf)]*0.00
-                if (s in y_in_sf.keys()) and (s not in ip):
-                    model.addConstr(constr3 == constr4 + y_in_sf[s], 'balance_with_y_in')
-                if (s in y_in_sf.keys()) and (s in ip):
-                    model.addConstr(constr3 == y_in_sf[s], 'balance_with_y_in')
-                if (s not in y_in_sf.keys()) and (s not in ip):
-                    model.addConstr(constr3 == constr4, 'balance')
+                            # else:
+                            #     constr4 += Y[(f,uf)]*0.00
+                # if (s in y_in_sf.keys()) and (s not in ip):
+                #     model.addConstr(constr3 == constr4 + y_in_sf[s], 'balance_with_y_in')
+                # if (s in y_in_sf.keys()) and (s in ip):
+                #     model.addConstr(constr3 == y_in_sf[s], 'balance_with_y_in')
+                # if (s not in y_in_sf.keys()) and (s not in ip):
+                #     model.addConstr(constr3 == constr4, 'balance')
+                model.addConstr(constr3 == constr4, 'balance')
             print 'Balance condition added'
             print 'Initial sf condition added'            
             #--------------------
             y_to_ip = 0.0
             y_out = 0.0
             for s in Sn:
-                for t in prod_mdp.successors_iter(s):
+                for t in prod_mdp.successors(s):
                     if t not in Sn:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
                                 y_out += Y[(s,u)]*pe
                     elif t in ip:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
                                 y_to_ip += Y[(s,u)]*pe
-            model.addConstr(y_to_ip+y_out >= 1.0, 'sum_out')
-            model.addConstr(y_to_ip >= (1.0-gamma_o)*(y_to_ip+y_out), 'risk')
+            #model.addConstr(y_to_ip+y_out >= 1.0, 'sum_out')
+            #model.addConstr(y_to_ip >= (1.0-gamma_o)*(y_to_ip+y_out), 'risk')
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
-            for t in prod_mdp.successors_iter(init_node):
-                prop = prod_mdp.edge[init_node][t]['prop'].copy()
+            p_to_return = 0.0
+            for t in prod_mdp.successors(init_node):
+                prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     if u in act[init_node]:
                         sigma = prop[u][1]
                         v = prod_mdp.v_return[t[0]]
                         pe = prop[u][0]
                         y_to_return += Y[(s,u)]*pe*(v+sigma)
+                        p_to_return += Y[(s,u)]
             #model.addConstr(y_to_return >= gamma_r, 'safety')
             model.addConstr(y_to_return >= 0.0, 'safety')
+            model.addConstr(p_to_return >= 1.0, 'safety')
             print 'Safety constraint added'
             #------------------------------
             # solve
@@ -382,15 +373,15 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
             y_to_ip = 0.0
             y_out = 0.0
             for s in Sn:
-                for t in prod_mdp.successors_iter(s):
+                for t in prod_mdp.successors(s):
                     if t not in Sn:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
                                 y_out += Y[(s,u)].X*pe
                     elif t in ip:
-                        prop = prod_mdp.edge[s][t]['prop'].copy()
+                        prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
@@ -400,8 +391,8 @@ def syn_plan_suffix(prod_mdp, MEC, gamma, init_node):
             print 'y_out: %s; y_to_ip+y_out: %s' %(y_out, y_to_ip+y_out)
             # compute safety
             y_to_return = 0.0
-            for t in prod_mdp.successors_iter(init_node):
-                prop = prod_mdp.edge[init_node][t]['prop'].copy()
+            for t in prod_mdp.successors(init_node):
+                prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
                     v = prod_mdp.v_return[t[0]]
@@ -527,21 +518,21 @@ def syn_return_plan(prod_mdp):
         V = defaultdict(float)
         model = Model('return_plan')
         # create variables
-        for s in mdp.nodes_iter():
+        for s in mdp.nodes():
             V[s] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='v[%s]' %str(s))
         model.update()
         print 'Variables added'
         # --------------------
         # set objective
         obj = 0
-        for s in mdp.nodes_iter():
+        for s in mdp.nodes():
             obj += V[s]
         model.setObjective(obj, GRB.MINIMIZE)
         print 'Objective function set'
         # add constraints
         #------------------------------        
         #--------------------
-        for s in mdp.nodes_iter():
+        for s in mdp.nodes():
             #print 's now', s
             if s in s_h:
                 model.addConstr(V[s] == 1.0, 'goal_node_value')
@@ -549,8 +540,8 @@ def syn_return_plan(prod_mdp):
                 for u in mdp.node[s]['act']:
                     sigma = 0
                     suc_V = 0
-                    for t in mdp.successors_iter(s):
-                        prop = mdp.edge[s][t]['prop']
+                    for t in mdp.successors(s):
+                        prop = mdp[s][t]['prop']
                         if u in prop.keys():
                             # print 's,u,t,prop[u]',[s,u,t,prop[u]]
                             sigma += prop[u][2]*prop[u][3]
@@ -570,7 +561,7 @@ def syn_return_plan(prod_mdp):
         #------------------------------
         print '--optimization done--'
         V_return = dict()
-        for s in mdp.nodes_iter():
+        for s in mdp.nodes():
             V_return[s] = V[s].X
         print '--value function returned--'
         # print 'V_return', V_return

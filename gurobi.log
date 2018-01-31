@@ -498,3 +498,263 @@ Presolve time: 0.00s
 
 Solved in 0 iterations and 0.00 seconds
 Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:34:37 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [6e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [4e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    9.9699203e+00   8.173805e+00   0.000000e+00      0s
+      67    4.9941558e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 67 iterations and 0.00 seconds
+Optimal objective  4.994155755e+01
+Optimize a model with 99 rows, 270 columns and 1016 nonzeros
+Coefficient statistics:
+  Matrix range     [8e-03, 1e+00]
+  Objective range  [6e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:35:44 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [4e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0074683e+01   8.304336e+00   0.000000e+00      0s
+      66    5.0082087e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 66 iterations and 0.00 seconds
+Optimal objective  5.008208698e+01
+Optimize a model with 98 rows, 270 columns and 916 nonzeros
+Coefficient statistics:
+  Matrix range     [1e-02, 1e+00]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:37:06 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [7e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0174961e+01   8.596933e+00   0.000000e+00      0s
+      65    5.0006967e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 65 iterations and 0.00 seconds
+Optimal objective  5.000696731e+01
+Warning for adding constraints: zero or small (< 1e-13) coefficients, ignored
+Optimize a model with 56 rows, 270 columns and 798 nonzeros
+Coefficient statistics:
+  Matrix range     [6e-03, 1e+00]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:38:01 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [6e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0333923e+01   8.686962e+00   0.000000e+00      0s
+      67    4.9811325e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 67 iterations and 0.00 seconds
+Optimal objective  4.981132497e+01
+Optimize a model with 2 rows, 270 columns and 102 nonzeros
+Coefficient statistics:
+  Matrix range     [5e-01, 7e-01]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 3 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:39:08 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [2e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0594840e+01   9.186004e+00   0.000000e+00      0s
+      66    5.0440641e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 66 iterations and 0.00 seconds
+Optimal objective  5.044064073e+01
+Optimize a model with 96 rows, 270 columns and 814 nonzeros
+Coefficient statistics:
+  Matrix range     [8e-03, 1e+00]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:40:23 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [4e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0222552e+01   8.796120e+00   0.000000e+00      0s
+      70    5.0179312e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 70 iterations and 0.00 seconds
+Optimal objective  5.017931205e+01
+Optimize a model with 0 rows, 270 columns and 0 nonzeros
+Coefficient statistics:
+  Matrix range     [0e+00, 0e+00]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 3 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 09:41:26 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [4e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0064334e+01   8.657616e+00   0.000000e+00      0s
+      68    5.0136423e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 68 iterations and 0.00 seconds
+Optimal objective  5.013642336e+01
+Optimize a model with 54 rows, 270 columns and 696 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-03, 1e+00]
+  Objective range  [7e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 14:46:44 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [7e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [7e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    9.7415419e+00   8.091051e+00   0.000000e+00      0s
+      66    5.0023663e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 66 iterations and 0.00 seconds
+Optimal objective  5.002366342e+01
+
+Gurobi 7.0.2 (linux64, Python) logging started Wed Jan 31 14:48:20 2018
+
+Optimize a model with 244 rows, 64 columns and 688 nonzeros
+Coefficient statistics:
+  Matrix range     [6e-02, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [9e-18, 1e+00]
+Presolve removed 32 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 212 rows, 60 columns, 676 nonzeros
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    1.0162242e+01   8.397238e+00   0.000000e+00      0s
+      68    4.9807465e+01   0.000000e+00   0.000000e+00      0s
+
+Solved in 68 iterations and 0.00 seconds
+Optimal objective  4.980746477e+01
+Optimize a model with 98 rows, 270 columns and 1264 nonzeros
+Coefficient statistics:
+  Matrix range     [8e-03, 3e+00]
+  Objective range  [6e-01, 4e+00]
+  Bounds range     [0e+00, 0e+00]
+  RHS range        [1e+00, 1e+00]
+Presolve removed 0 rows and 1 columns
+Presolve time: 0.00s
+
+Solved in 0 iterations and 0.00 seconds
+Infeasible or unbounded model

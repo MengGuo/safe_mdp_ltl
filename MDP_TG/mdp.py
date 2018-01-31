@@ -28,7 +28,7 @@ class Motion_MDP(DiGraph):
             u = edge[1]
             t_node = edge[2]
             if (f_node, t_node) in self.edges():
-                prop = self.edge[f_node][t_node]['prop']
+                prop = self[f_node][t_node]['prop']
                 prop[tuple(u)] = [attri[0], attri[1], 0, 0] #k,c,p,sigma
             else:                
                 prob_cost = dict()
@@ -38,8 +38,8 @@ class Motion_MDP(DiGraph):
         #----
         for f_node in self.nodes():
             Us = set()
-            for t_node in self.successors_iter(f_node):
-                prop = self.edge[f_node][t_node]['prop']
+            for t_node in self.successors(f_node):
+                prop = self[f_node][t_node]['prop']
                 Us.update(set(prop.keys()))
             if Us:
                 self.node[f_node]['act'] = Us.copy()
@@ -56,16 +56,16 @@ class Motion_MDP(DiGraph):
             for u in self.node[f_node]['act']:
                 alpha = []
                 b = []
-                for t_node in self.successors_iter(f_node):
-                    prop = self.edge[f_node][t_node]['prop']
+                for t_node in self.successors(f_node):
+                    prop = self[f_node][t_node]['prop']
                     if u in prop.keys():
                         alpha.append(prop[u][0])
                         b.append(t_node)
                 # print 'alpha, b', [alpha, b]
                 mean_b, sigma_b = est_mean_sigma(alpha, b)
                 # print 'mean_b, sigma_b', [mean_b, sigma_b]
-                for t_node in self.successors_iter(f_node):
-                    prop = self.edge[f_node][t_node]['prop']
+                for t_node in self.successors(f_node):
+                    prop = self[f_node][t_node]['prop']
                     if u in prop.keys():
                         prop[u][2] = mean_b[t_node]
                         prop[u][3] = sigma_b[t_node]
@@ -100,7 +100,7 @@ def find_MECs(mdp, Sneg):
             for s_f in T_temp:
                 if s_f not in simple_digraph:
                     simple_digraph.add_node(s_f)
-                for s_t in mdp.successors_iter(s_f):
+                for s_t in mdp.successors(s_f):
                     if s_t in T_temp:
                         simple_digraph.add_edge(s_f,s_t)
             print "SubGraph of one MEC: %s states and %s edges" %(str(len(simple_digraph.nodes())), str(len(simple_digraph.edges())))
@@ -112,8 +112,8 @@ def find_MECs(mdp, Sneg):
                     for s in Scc.nodes():
                         U_to_remove = set() 
                         for u in A[s]:
-                            for t in mdp.successors_iter(s):
-                                if ((u  in mdp.edge[s][t]['prop'].keys()) and (t not in Scc.nodes())):
+                            for t in mdp.successors(s):
+                                if ((u  in mdp[s][t]['prop'].keys()) and (t not in Scc.nodes())):
                                     U_to_remove.add(u)
                         A[s].difference_update(U_to_remove)
                         if not A[s]:                            
@@ -123,7 +123,7 @@ def find_MECs(mdp, Sneg):
                 T_temp.remove(s)
                 for f in mdp.predecessors(s):
                     if f in T_temp:
-                        A[f].difference_update(set(mdp.edge[f][s]['prop'].keys()))
+                        A[f].difference_update(set(mdp[f][s]['prop'].keys()))
                         if not A[f]:
                             R.add(f)
             New_Sccs = strongly_connected_component_subgraphs(simple_digraph)
@@ -151,7 +151,7 @@ def find_SCCs(mdp, Sneg):
     for s_f in Sneg:
         if s_f not in simple_digraph:
             simple_digraph.add_node(s_f)
-        for s_t in mdp.successors_iter(s_f):
+        for s_t in mdp.successors(s_f):
             if s_t in Sneg:
                 simple_digraph.add_edge(s_f,s_t)
     print "SubGraph of one Sf: %s states and %s edges" %(str(len(simple_digraph.nodes())), str(len(simple_digraph.edges())))

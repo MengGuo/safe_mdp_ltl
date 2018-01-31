@@ -514,7 +514,7 @@ def visualize_state_action_dynamic(motion_mdp, WS_d, WS_node_dict, x, l, u, m):
     ax.text(xl, yl+0.5, r'$%s$' %str(actstr), fontsize = 13, fontweight = 'bold', color='red')
     # plot shadow
     t_x_list = []
-    for t_x in motion_mdp.successors_iter(x):
+    for t_x in motion_mdp.successors(x):
         prop = motion_mdp[x][t_x]['prop']
         if u in prop.keys():
             t_x_list.append((t_x, prop[u][0]))
