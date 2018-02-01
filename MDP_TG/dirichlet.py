@@ -30,7 +30,8 @@ def est_prod_mean_sigma(dirichlet, f_x, f_u, N=2):
     print 's1', s1
     N_1 = len(b_1)
     out_come = dict()
-    for t_x in b_1:
+    for n1 in range(N_1):
+        t_x = b_1[n1]
         l_x_k = s_l_p[t_x]
         b_2 = l_x_k.keys()
         alpha_2 = [l_x_k[b] for b in b_2]
@@ -40,25 +41,21 @@ def est_prod_mean_sigma(dirichlet, f_x, f_u, N=2):
         print 's2', s2
         N_2 = len(b_2)
         #--------------------        
-        for n1 in range(N_1):
-            for n2 in range(N_2):
-                b1 = b_1[n1]
-                b2 = b_2[n2]
-                b = (b1, b2)
-                out_come[b] = []
+        for n2 in range(N_2):
+            l_x = b_2[n2]
+            b = (t_x, l_x)
+            out_come[b] = []
         for i in range(N):
             for j in range(N):
                 p1 = s1[i]
                 p2 = s2[j]
-                for n1 in range(N_1):
-                    for n2 in range(N_2):
-                        b1 = b_1[n1]
-                        b2 = b_2[n2]
-                        b = (b1, b2)
-                        if b not in out_come:
-                            out_come[b] = [p1[n1]*p2[n2], ]
-                        else:
-                            out_come[b].append(p1[n1]*p2[n2])
+                for n2 in range(N_2):
+                    l_x = b_2[n2]
+                    b = (t_x, l_x)
+                    if b not in out_come:
+                        out_come[b] = [p1[n1]*p2[n2], ]
+                    else:
+                        out_come[b].append(p1[n1]*p2[n2])
     print 'out_come', out_come
     mean_b = dict()
     sigma_b = dict()
