@@ -52,10 +52,10 @@ def construct_nodes(L, N, label_set, features, heights, blur):
             for l in label_set:
                 if (n_xy in features):
                     if (l == features[n_xy]):
-                        real_label[l] = 10
+                        real_label[l] = 20
                 else:
                     if (l == frozenset([])):
-                        real_label[l] = 10
+                        real_label[l] = 20
             real_ws_nodes[node_xy] = [real_label, ]
             # ---------- initial height
             ht = blur_height(n_xy, blur, heights)

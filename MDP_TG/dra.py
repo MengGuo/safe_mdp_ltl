@@ -138,8 +138,6 @@ class Product_Dra(DiGraph):
             else:
                 for f_node in self.nodes():
                     for f_u in self.node[f_node]['act'].copy():
-                        print '----------'
-                        sum_s_u = 0
                         f_x = f_node[0]
                         mean_b, sigma_b = est_prod_mean_sigma(self.graph['dirichlet'], f_x, f_u)
                         #---------- update mean, sigma
@@ -153,11 +151,8 @@ class Product_Dra(DiGraph):
                                 mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
                                 self[f_node][t_node]['prop'][f_u][0] = mean_p[0]
-                                print '[f_node, f_u, t_node, mean_p[0]]', [f_node, f_u, t_node, mean_p[0]]
-                                sum_s_u += mean_p[0]
                                 self[f_node][t_node]['prop'][f_u][1] = sigma[0]
                                 self[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
-                        print 'sum_s_u', sum_s_u
             print '-----initial computation of mean sigma done----------'
 
 
@@ -577,11 +572,11 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
         prod_mdp.update_mean_sigma(s_p, l_p)
         t3 = time.time()
         print 'Update model done, time: %s' %(str(t3-t2))
-        best_all_plan = syn_real_time_plan(prod_mdp, gamma, current_state)
-        prod_mdp.current_plan = best_all_plan
+        best_all_plan, segment = syn_real_time_plan(prod_mdp, gamma, current_state)
+        prod_mdp.current_plan = [best_all_plan, segment]
         t4 = time.time()
         print 'Safe plan synthesis done, time: %s' %(str(t4-t3))
-        u, m = act_by_plan(prod_mdp, best_all_plan, current_state)
+        u, m = act_by_plan(prod_mdp, best_all_plan, segment, current_state)
         X.append(mdp_state)
         PX.append(current_state)
         L.append(set(label))
