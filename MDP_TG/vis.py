@@ -15,6 +15,7 @@ matplotlib.rcParams['text.usetex'] = True
 def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
     #----visualize simulated runs----
     N = len(XX)
+    k_colors = plt.get_cmap('Greys')
     #----
     for n in xrange(0, N):
         figure = plt.figure()
@@ -38,7 +39,10 @@ def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
                 text = None
                 color = 'white'
             ht = prop[1]
-            MAX_ht = [-2*l, 1.5*l]
+            if ((ht>=l) or (ht<=-l)):
+                MIN_H, MAX_H = [-2*l, 1.5*l]
+                c = (ht - MIN_H)/(MAX_H - MIN_H)
+                color = k_colors(c)
             rec = matplotlib.patches.Rectangle((node[0]-l, node[1]-l),
                                                l*2, l*2,
                                                fill = True,
