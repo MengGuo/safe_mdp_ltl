@@ -70,6 +70,20 @@ class Motion_MDP(DiGraph):
                         prop[u][2] = mean_b[t_node]
                         prop[u][3] = sigma_b[t_node]
         print 'Add mean and sigma Done'
+
+    def verify(self):
+        print '----------to verify MDP outgoing prob----------'
+        for f_node in self.nodes():
+            for u in self.node[f_node]['act']:
+                print '----------'
+                print 'from node %s under action %s' %(str(f_node), str(u))
+                sum_p = 0
+                for t_node in self.successors(f_node):
+                    prop = self[f_node][t_node]['prop']
+                    if u in prop.keys():
+                        print 'to node %s: prop %s' %(str(t_node), str(prop[u]))
+                        sum_p += prop[u][2]
+                print 'total sum_p', sum_p
                     
 #--------------------------------
 def find_MECs(mdp, Sneg):

@@ -15,7 +15,7 @@ matplotlib.rcParams['text.usetex'] = True
 def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
     #----visualize simulated runs----
     N = len(XX)
-    k_colors = plt.get_cmap('Greys')
+    k_colors = plt.get_cmap('PRGn')
     #----
     for n in xrange(0, N):
         figure = plt.figure()
@@ -39,24 +39,23 @@ def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
                 text = None
                 color = 'white'
             ht = prop[1]
-            if ((ht>=l) or (ht<=-l)):
-                MIN_H, MAX_H = [-2*l, 1.5*l]
-                c = (ht - MIN_H)/(MAX_H - MIN_H)
-                color = k_colors(c)
+            if color == 'white':
+                if ((ht>=0.1*l) or (ht<=-0.1*l)):
+                    MIN_H, MAX_H = [-2*l, 1.5*l]
+                    c = (ht - MIN_H)/(MAX_H - MIN_H)
+                    color = k_colors(c)
             rec = matplotlib.patches.Rectangle((node[0]-l, node[1]-l),
                                                l*2, l*2,
                                                fill = True,
                                                facecolor = color,
                                                edgecolor = 'black',
                                                linewidth = 1,
-                                               ls = '--',
                                                alpha =0.8)
             ax.add_patch(rec)
             if text:
-                ax.text(node[0]-0.7, node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')
+                ax.text(node[0], node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')
         X = list(XX[n])
         L = list(LL[n])
-        U = list(UU[n])
         M = list(MM[n])
         K = len(X)
         #print 'K: %s' %K
@@ -81,14 +80,15 @@ def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
                 yl = X[k][1]
                 dl = X[k][2]
                 if dl == 'N':
-                    car=[(xl-0.2,yl-0.2), (xl-0.2,yl+0.2), (xl, yl+0.4), (xl+0.2, yl+0.2), (xl+0.2,yl-0.2)]
+                    car=[(xl-0.4*l,yl-0.4*l), (xl-0.4*l,yl+0.4*l), (xl, yl+0.8*l), (xl+0.4*l, yl+0.4*l), (xl+0.4*l,yl-0.4*l)]
                 if dl == 'E':
-                    car=[(xl-0.2,yl+0.2), (xl+0.2,yl+0.2), (xl+0.4, yl), (xl+0.2, yl-0.2), (xl-0.2,yl-0.2)]
+                    car=[(xl-0.4*l,yl+0.4*l), (xl+0.4*l,yl+0.4*l), (xl+0.8*l, yl), (xl+0.4*l, yl-0.4*l), (xl-0.4*l,yl-0.4*l)]
                 if dl == 'S':
-                    car=[(xl+0.2,yl+0.2), (xl+0.2,yl-0.2), (xl, yl-0.4), (xl-0.2, yl-0.2), (xl-0.2,yl+0.2)]
+                    car=[(xl+0.4*l,yl+0.4*l), (xl+0.4*l,yl-0.4*l), (xl, yl-0.8*l), (xl-0.4*l, yl-0.4*l), (xl-0.4*l,yl+0.4*l)]
                 if dl == 'W':
-                    car=[(xl+0.2,yl-0.2), (xl-0.2,yl-0.2), (xl-0.4, yl), (xl-0.2, yl+0.2), (xl+0.2,yl+0.2)]                
-                polygon = Polygon(car, facecolor='black', edgecolor='black', lw=0.5, alpha=0.7)
+                    car=[(xl+0.4*l,yl-0.4*l), (xl-0.4*l,yl-0.4*l), (xl-0.8*l, yl), (xl-0.4*l, yl+0.4*l), (xl+0.4*l,yl+0.4*l)]
+                print 'drawing car'
+                polygon = Polygon(car, facecolor='black', edgecolor='black', lw=0.5, alpha=0.7, zorder = 4)
                 ax.add_patch(polygon)
         ax.set_aspect('equal')
         ax.set_xlim(0, Ns*2*l)
@@ -97,6 +97,7 @@ def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
         ax.set_ylabel(r'$y(m)$')    
         if name:
             plt.savefig('%s%s.pdf' %(name,str(n)),bbox_inches='tight')
+            print "%s%s.pdf saved" %(name,str(n))
 
 
             

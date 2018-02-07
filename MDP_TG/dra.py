@@ -515,6 +515,21 @@ class Product_Dra(DiGraph):
                 M.append(m)
                 t += 1
             return X, L, U, M, PX
+
+
+        def verify(self):
+            print '----------to verify product outgoing prob----------'
+            for f_node in self.nodes():
+                for u in self.node[f_node]['act']:
+                    print '----------'
+                    print 'from node %s under action %s' %(str(f_node), str(u))
+                    sum_p = 0
+                    for t_node in self.successors(f_node):
+                        prop = self[f_node][t_node]['prop']
+                        if u in prop.keys():
+                            print 'to node %s: prop %s' %(str(t_node), str(prop[u]))
+                            sum_p += prop[u][0]
+                    print 'total sum_p', sum_p            
             
             
                         
@@ -570,6 +585,7 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
         t2 = time.time()
         print 'Sensing done, time: %s' %(str(t2-t1))
         prod_mdp.update_mean_sigma(s_p, l_p)
+        #prod_mdp.verify()
         t3 = time.time()
         print 'Update model done, time: %s' %(str(t3-t2))
         best_all_plan, segment = syn_real_time_plan(prod_mdp, gamma, current_state)

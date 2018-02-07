@@ -3,6 +3,7 @@
 Utilities to build quickly initialize map and real map. 
 '''
 
+import random
 
 def blur_feature(n_xy, blur, features):
     # to find blurred feature
@@ -12,7 +13,8 @@ def blur_feature(n_xy, blur, features):
     for key, value in features.iteritems():
         f_x, f_y = key[:]        
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
-            feat.add(value)
+            if random.random() >= 0.3:
+                feat.add(value)
     return feat
 
 
@@ -23,8 +25,11 @@ def blur_height(n_xy, blur, heights):
     for key, value in heights.iteritems():
         f_x, f_y = key[:]        
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
-            return value
-    return None    
+            if random.random() >= 0.2:
+                return value
+            else:
+                return 0
+    return 0    
 
 
 def construct_nodes(L, N, label_set, features, heights, blur):
@@ -52,10 +57,10 @@ def construct_nodes(L, N, label_set, features, heights, blur):
             for l in label_set:
                 if (n_xy in features):
                     if (l == features[n_xy]):
-                        real_label[l] = 20
+                        real_label[l] = 10
                 else:
                     if (l == frozenset([])):
-                        real_label[l] = 20
+                        real_label[l] = 10
             real_ws_nodes[node_xy] = [real_label, ]
             # ---------- initial height
             ht = blur_height(n_xy, blur, heights)
