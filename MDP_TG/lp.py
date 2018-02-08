@@ -54,6 +54,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
     gamma_o = gamma[0]
     gamma_r = gamma[1]
     Sf = MEC[0]
+    ip = MEC[1]
     delta = 1.0
     print 'init_node', init_node
     print 'init node not in Sf', (init_node not in Sf)
@@ -85,7 +86,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             # create variables
             for s in Sr:
                 for u in prod_mdp.node[s]['act'].copy():
-                    Y[(s,u)] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='y[(%s, %s)]' %(s, u))
+                    Y[(s,u)] = model.addVar(vtype=GRB.CONTINUOUS,lb=0, name='y[(%s,%s)]' %(s, u))
             model.update()
             print 'Variables added'
             # set objective
@@ -116,17 +117,20 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                         elif t in Sf:
                             y_to_Sf += Y[(s,u)]*pe*(1+sigma)
             # model.addConstr(y_to_Sf+y_to_sd >= delta, 'sum_out')
-            model.addConstr(y_to_Sf >= gamma_o*(y_to_Sf+y_to_sd), 'risk')
+            model.addConstr(y_to_Sf >= gamma_o, 'risk')
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
+            p_to_return = 0.0
             for t in prod_mdp.successors(init_node):
                 prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
                     v = prod_mdp.v_return[t[0]]
                     pe = prop[u][0]
-                    y_to_return += Y[(s,u)]*pe*(v+sigma)
+                    y_to_return += Y[(init_node,u)]*pe*(v+sigma)
+                    p_to_return += Y[(init_node,u)]
+            #model.addConstr(y_to_return >= gamma_r*p_to_return, 'safety')
             model.addConstr(y_to_return >= gamma_r, 'safety')
             print 'Safety constraint added'
             #--------------------
@@ -142,11 +146,13 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                             #print 'f, uf, t, prop[uf]', [f, uf, t, prop[uf]]
                             node_y_in += Y[(f,uf)]*prop[uf][0]
                 if t == init_node:
-                    model.addConstr(node_y_out == 1.0 + node_y_in, 'init_node_flow_balance')
+                    model.addConstr(node_y_out == 1.0 + node_y_in, 'init_node_flow_balance for %s' %str(t))
                 else:
-                    model.addConstr(node_y_out == node_y_in, 'middle_node_flow_balance')
+                    model.addConstr(node_y_out == node_y_in, 'middle_node_flow_balance_for_%s' %str(t))
             print 'Initial node flow balanced'
             print 'Middle node flow balanced'
+            model.update()
+            #model.write("debug.lp")
             #----------------------
             # solve
             print '--optimization starts--'
@@ -156,6 +162,11 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             #     print v.varName, v.x
             # print 'obj:', model.objVal
             #------------------------------
+            # model.computeIIS()
+            # print "The following constraint(s) cannot be satisfied:"
+            # for c in model.getConstrs():
+            #     if c.IISConstr:
+            #         print c.constrName
             # compute plan prefix given the LP solution
             plan_prefix = dict()
             for s in Sr:
@@ -172,8 +183,17 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                     else:
                         P.append(1.0/len(U_total))
                 plan_prefix[s] = [U, P]
-            print "----Prefix plan generated"
-            cost = model.objval
+            print "----Prefix plan generated----"
+            print "----solution for current_node %s----" %str(init_node)
+            Y_init_node = dict()
+            for u in prod_mdp.node[init_node]['act'].copy():
+                Y_init_node[u] =  Y[(init_node,u)].X
+            print 'Y_init_node', Y_init_node
+            print "----Plan for current_node %s----" %str(init_node)
+            print plan_prefix[init_node]
+            print "----Plan for current_node----"
+            print plan_prefix[init_node]
+            cost = model.objval            
             print "----Prefix cost computed"
             # compute the risk given the plan prefix
             risk = 0.0
@@ -193,7 +213,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                             y_to_Sf += Y[(s,u)].X*pe
             if (y_to_sd+y_to_Sf) >0:
                 risk = y_to_sd/(y_to_sd+y_to_Sf)
-            print 'y_to_sd: %s; y_to_sd+y_to_Sf: %s' %(y_to_sd, y_to_sd+y_to_Sf)
+            print 'y_to_sd: %s; y_to_Sf: %s' %(y_to_sd, y_to_Sf)
             print "----Prefix risk computed: %s" %str(risk)
             # compute the input flow to the suffix
             y_in_Sf = dict()
@@ -218,15 +238,17 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                 print "----Y in Sf computed and normalized"
             #print y_in_Sf                
             # compute safety
-            y_to_return = 0.0
+            y_to_return = []
+            p_to_return = []
             for t in prod_mdp.successors(init_node):
                 prop = prod_mdp[init_node][t]['prop'].copy()
                 for u in prop.iterkeys():
                     sigma = prop[u][1]
                     v = prod_mdp.v_return[t[0]]
                     pe = prop[u][0]
-                    y_to_return += Y[(init_node,u)].X*pe*(v+sigma)
-            print "----safety computed: %s for given gamma_r %s" %(str(y_to_return), gamma_r)
+                    y_to_return.append(Y[(init_node,u)].X*pe*(v+sigma))
+                    p_to_return.append(Y[(init_node,u)].X)
+            print "----Prefix safety computed: *%s* (%s) of *%s* (%s) for given gamma_r %s" %(sum(y_to_return), str(y_to_return), sum(p_to_return), str(p_to_return), gamma_r)
             return plan_prefix, cost, risk, y_in_Sf, Sr, Sd
         except GurobiError:
             print "Gurobi Error reported"
@@ -242,20 +264,26 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
     print "===========[plan suffix synthesis starts]==========="
     gamma_o = gamma[0]
     gamma_r = gamma[1]
-    sf = MEC[0]
+    Sf = MEC[0]
     ip = MEC[1]
     act = MEC[2].copy()
-    y_in_sf = dict()
-    for s in sf:
-        y_in_sf[s] = 1.0/len(sf)
-    if init_node in sf:
+    y_in_Sf = dict()
+    for s in Sf:
+        #y_in_Sf[s] = 1.0/len(Sf)
+        if s == init_node:
+            y_in_Sf[s] = 1.0
+        else:
+            y_in_Sf[s] = 0.0
+    if init_node in Sf:
         print '---------- init_node in SUFFIX ----------'
+        if init_node in ip:
+            print 'init_node in Ip'
         paths = single_source_shortest_path(prod_mdp, init_node)
-        Sn = set(paths.keys()).intersection(sf)
-        print 'Sf size: %s' %len(sf)
-        print 'Sn as reachable sf size: %s' %len(Sn)
+        Sn = set(paths.keys()).intersection(Sf)
+        print 'Sf size: %s' %len(Sf)
+        print 'Sn as reachable Sf size: %s' %len(Sn)
         print 'Ip size: %s' %len(ip)
-        print 'Ip and sf intersection size: %s'%len(Sn.intersection(ip))
+        print 'Ip and Sf intersection size: %s'%len(Sn.intersection(ip))
         # ---------solve lp------------
         print '------'
         print 'Gurobi starts now'
@@ -306,17 +334,17 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                                 constr4 += Y[(f,uf)]*prop[uf][0]
                             else:
                                 constr4 += Y[(f,uf)]*0.00
-                if (s in y_in_sf.keys()) and (s not in ip):
-                    print 's, in sf, not in ip, y_in_sf[s]', [s, y_in_sf[s]]
-                    model.addConstr(constr3 == constr4 + y_in_sf[s], 'balance_with_y_in')
-                if (s in y_in_sf.keys()) and (s in ip):
-                    print 's, in sf, in ip', [s, y_in_sf[s]]
-                    model.addConstr(constr3 == y_in_sf[s], 'balance_with_y_in')
-                if (s not in y_in_sf.keys()) and (s not in ip):
-                    print 's, not in sf, not in ip', s
+                if (s in y_in_Sf.keys()) and (s not in ip):
+                    #print 's, in Sf, not in ip, y_in_Sf[s]', [s, y_in_Sf[s]]
+                    model.addConstr(constr3 == constr4 + y_in_Sf[s], 'balance_with_y_in')
+                if (s in y_in_Sf.keys()) and (s in ip):
+                    #print 's, in Sf, in ip', [s, y_in_Sf[s]]
+                    model.addConstr(constr3 == y_in_Sf[s], 'balance_with_y_in')
+                if (s not in y_in_Sf.keys()) and (s not in ip):
+                    #print 's, not in Sf, not in ip', s
                     model.addConstr(constr3 == constr4, 'balance')
             print 'Balance condition added'
-            print 'Initial sf condition added'
+            print 'Initial Sf condition added'
             #------------------------------
             y_to_ip = 0.0
             y_out = 0.0
@@ -333,9 +361,9 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                         for u in prop.iterkeys():
                             if u in act[s]:
                                 pe = prop[u][0]
-                                y_to_ip += Y[(s,u)]*pe
-            #model.addConstr(y_to_ip+y_out >= 1.0, 'sum_out')
-            model.addConstr(y_to_ip >= gamma_o*(y_to_ip+y_out), 'risk')
+                                y_to_ip += Y[(s,u)]*pe        
+            #model.addConstr(y_to_ip >= gamma_o*(y_to_ip+y_out), 'risk')
+            model.addConstr(y_to_ip >= gamma_o, 'risk')
             print 'Task constraint added'
             #------------------------------
             y_to_return = 0.0
@@ -349,9 +377,8 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                         pe = prop[u][0]
                         y_to_return += Y[(init_node,u)]*pe*(v+sigma)
                         p_to_return += Y[(init_node,u)]
-            model.addConstr(y_to_return >= gamma_r*p_to_return, 'safety')
-            #model.addConstr(y_to_return >= 0.0, 'safety')
-            #model.addConstr(p_to_return == 1.0, 'safety')
+            #model.addConstr(y_to_return >= gamma_r*p_to_return, 'safety')
+            model.addConstr(y_to_return >= gamma_r, 'safety')
             print 'Safety constraint added'
             #------------------------------
             # solve
@@ -377,7 +404,17 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                         P.append(1.0/len(act[s])) 
                 plan_suffix[s] = [U, P]
             # for key, value in plan_suffix.iteritems():
-            #     print 'key, value', [key, value]                    
+            #     print 'key, value', [key, value]
+            print "----Suffix plan generated----"
+            if init_node in ip:
+                print 'init_node in Ip'
+            print "----solution for current_node %s----" %str(init_node)
+            Y_init_node = dict()
+            for u in act[init_node]:
+                Y_init_node[u] =  Y[(init_node,u)].X
+            print 'Y_init_node', Y_init_node
+            print "----Plan for current_node %s----" %str(init_node)
+            print plan_suffix[init_node]
             cost = model.objval
             print "----Suffix cost computed"
             # compute task constraint given the plan suffix

@@ -150,7 +150,8 @@ class Product_Dra(DiGraph):
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
                                 self[f_node][t_node]['prop'][f_u][0] = mean_b[(t_x,t_l)]
                                 self[f_node][t_node]['prop'][f_u][1] = sigma_b[(t_x,t_l)]
-                                self[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
+                                self[f_node][t_node]['prop'][f_u][3] = min([5.0/(1+k_x_u) + 5.0/(1+k_x_l),
+                                                                            self[f_node][t_node]['prop'][f_u][2]])
             print '-----initial computation of mean sigma done----------'
 
 
@@ -211,7 +212,8 @@ class Product_Dra(DiGraph):
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
                                 self[f_node][t_node]['prop'][f_u][0] = mean_b[(t_x,t_l)]
                                 self[f_node][t_node]['prop'][f_u][1] = sigma_b[(t_x,t_l)]
-                                self[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
+                                self[f_node][t_node]['prop'][f_u][3] = min([5.0/(1+k_x_u) + 5.0/(1+k_x_l),
+                                                                            self[f_node][t_node]['prop'][f_u][2]])
                         #print '-----update mean sigma done----------'
                     # else:
                     #     print '-----No mean sigma update----------'
@@ -532,11 +534,9 @@ class Product_Dra(DiGraph):
                         
 def execution_with_sensing(prod_mdp, sensor, total_T):
     #----plan execution with or without given observation----
-    print '============================================================'
-    print '============================================================'
+    print ('====================================================================================================================================================================================')
     print '========Execution starts===================================='
-    print '============================================================'
-    print '============================================================'
+    print ('====================================================================================================================================================================================')
     t = 0            
     X = []
     L = []
@@ -547,11 +547,14 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
     gamma = prod_mdp.graph['gamma']
     #----
     while (t <= total_T):
+        print ('====================================================================================================================================================================================')
+        print '==========Time step %d==========' %t
+        print ('====================================================================================================================================================================================')
         t0 = time.time()
         if (t == 0):
             #print '---initial run----'
             initial_set  = prod_mdp.graph['initial'].copy()
-            current_state = list(init_set)[0]
+            current_state = list(initial_set)[0]
         else:
             prev_state = tuple(current_state)
             S = []
@@ -561,15 +564,18 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
                     prop = prod_mdp[prev_state][next_state]['prop']
                     if (best_u in prop.keys()):
                         S.append(next_state)
-                        P.append(prop[u][0])
+                        P.append(prop[best_u][0])
+            print 'S, P', [S, P]
             rdn = random.random()
-            pc = 0
+            pc = 0            
             for k, p in enumerate(P):
                 pc += p
                 if pc > rdn:
                     break
             current_state = tuple(S[k])
         #----
+        mdp_state = current_state[0]
+        label = current_state[1]
         #print '---with sensing model---'
         t1 = time.time()
         print 'Move to new state %s, time: %s' %(str(current_state), str(t1-t0))

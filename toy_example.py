@@ -41,7 +41,7 @@ P_TL = [1, 8, 1]
 P = [P_FR, P_BK, P_TR, P_TL]
 robot_edges = construct_edges(robot_nodes, l, U, C, P)
 
-visualize_world_paths(l, N, robot_nodes, [initial_node,initial_node,], [initial_label,initial_label], [], [0,0], 'test_map')
+#visualize_world_paths(l, N, robot_nodes, [initial_node,initial_node,], [initial_label,initial_label], [], [0,0], 'test_map')
 
 #-------------
 print '---------- Construct robot mdp ----------'
@@ -76,7 +76,7 @@ print 'DRA done, time: %s' %str(t3-t2)
 
 #----
 print '------------------------------'
-gamma = [0.1, 0.1] # gamma_o, gamma_r
+gamma = [0.5, 0.9] # gamma_o, gamma_r
 prod_dra = Product_Dra(mdp=robot_mdp, dra=dra, gamma=gamma)
 #prod_dra.dotify()
 t41 = time.time()
@@ -84,22 +84,29 @@ print 'Product DRA constructed, time: %s' %str(t41-t3)
 #prod_dra.verify()
 #----
 prod_dra.init_dirichlet()
-t43 = time.time()
-print 'Compute init_dirichlet done, time: %s' %str(t43-t42)
+t42 = time.time()
+print 'Compute init_dirichlet done, time: %s' %str(t42-t41)
 #----
 prod_dra.compute_init_mean_sigma()
-t44 = time.time()
-print 'Compute init_mean_sigma done, time: %s' %str(t44-t43)
+t43 = time.time()
+print 'Compute init_mean_sigma done, time: %s' %str(t43-t42)
 #prod_dra.verify()
 #----
 prod_dra.compute_S_f()
-t42 = time.time()
-print 'Compute MEC done, time: %s' %str(t42-t41)
+t44 = time.time()
+print 'Compute MEC done, time: %s' %str(t44-t43)
 
 # #------
-total_T = 2
+t5 = time.time()
+total_T = 20
 X, L, U, M, PX = execution_with_sensing(prod_dra, robot_sensor, total_T)
-# t5 = time.time()
+print '------------------------------'
+print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t44))
+print 'Trajectory:', X
+print 'Trace:', L
+print 'Segment', M
+print 'Action', U
+
 # print '------------------------------'
-# print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t42))
+# print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t44))
 

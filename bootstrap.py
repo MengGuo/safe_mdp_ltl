@@ -11,7 +11,9 @@ def blur_feature(n_xy, blur, features):
     n_x = n_xy[0]
     n_y = n_xy[1]
     for key, value in features.iteritems():
-        f_x, f_y = key[:]        
+        f_x, f_y = key[:]
+        if (key == n_xy):
+            feat.add(value)
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
             if random.random() >= 0.3:
                 feat.add(value)
@@ -23,7 +25,9 @@ def blur_height(n_xy, blur, heights):
     n_x = n_xy[0]
     n_y = n_xy[1]
     for key, value in heights.iteritems():
-        f_x, f_y = key[:]        
+        f_x, f_y = key[:]
+        if (key == n_xy):
+            return value
         if ((f_x-blur<= n_x <= f_x+blur) and (f_y-blur<= n_y <= f_y+blur)):
             if random.random() >= 0.2:
                 return value

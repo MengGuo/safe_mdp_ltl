@@ -58,7 +58,7 @@ def est_prod_mean_sigma(dirichlet, f_x, f_u, N=10):
             b = (t_x, l_x)
             sigma_2 = compute_sigma(n2, alpha_2)
             mean_b[b] = mean_1[n1]*mean_2[n2]
-            sigma_b[b] = min([sigma_1, sigma_2])
+            sigma_b[b] = -sigma_1*sigma_2
     return mean_b, sigma_b
 
 

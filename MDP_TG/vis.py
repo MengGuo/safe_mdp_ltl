@@ -81,7 +81,6 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
                 car=[(xl+0.4*l,yl+0.4*l), (xl+0.4*l,yl-0.4*l), (xl, yl-0.8*l), (xl-0.4*l, yl-0.4*l), (xl-0.4*l,yl+0.4*l)]
             if dl == 'W':
                 car=[(xl+0.4*l,yl-0.4*l), (xl-0.4*l,yl-0.4*l), (xl-0.8*l, yl), (xl-0.4*l, yl+0.4*l), (xl+0.4*l,yl+0.4*l)]
-            print 'drawing car'
             polygon = Polygon(car, facecolor='black', edgecolor='black', lw=0.5, alpha=0.7, zorder = 4)
             ax.add_patch(polygon)
     ax.set_aspect('equal')
