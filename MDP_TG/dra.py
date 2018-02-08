@@ -115,11 +115,11 @@ class Product_Dra(DiGraph):
             # dirichlet
             # s_u_p = {(x,u):{x':k}}
             # s_l_p = {x:{l:k}}
-            print '-----initial dirichlet start ----------'
+            print '-----initialize dirichlet for pD and pL starts----------'
             s_u_p = dict()
             s_l_p = dict()
             for f_x in self.graph['mdp'].nodes():
-                s_l_p[f_x] = self.graph['mdp'].node[f_x]['label']            
+                s_l_p[f_x] = self.graph['mdp'].node[f_x]['label'].copy()            
                 for f_u in self.graph['mdp'].node[f_x]['act'].copy():
                     suc_s_p = dict()
                     for t_x in self.graph['mdp'].successors(f_x):
@@ -148,10 +148,8 @@ class Product_Dra(DiGraph):
                             if f_u in e_prop:
                                 k_x_u = self.graph['dirichlet'][0][(f_x,f_u)][t_x]
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
-                                mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                self[f_node][t_node]['prop'][f_u][0] = mean_p[0]
-                                self[f_node][t_node]['prop'][f_u][1] = sigma[0]
+                                self[f_node][t_node]['prop'][f_u][0] = mean_b[(t_x,t_l)]
+                                self[f_node][t_node]['prop'][f_u][1] = sigma_b[(t_x,t_l)]
                                 self[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
             print '-----initial computation of mean sigma done----------'
 
@@ -171,8 +169,8 @@ class Product_Dra(DiGraph):
                 k_old += value
                 if k_old <= 0:
                     self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 1
-                if k_old >= 100:
-                     self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 100
+                if k_old >= 40:
+                     self.graph['dirichlet'][0][(f_x,f_u)][t_x] = 40
                 self.graph['mdp'][f_x][t_x]['prop'][f_u][0] =  self.graph['dirichlet'][0][(f_x,f_u)][t_x]
             #----------
             for key, value in l_p.iteritems():
@@ -181,8 +179,8 @@ class Product_Dra(DiGraph):
                 k_old += value
                 if k_old <= 0:
                    self.graph['dirichlet'][1][x][l] = 1
-                if k_old >= 100:
-                   self.graph['dirichlet'][1][x][l] = 100
+                if k_old >= 40:
+                   self.graph['dirichlet'][1][x][l] = 40
                 self.graph['mdp'].node[x]['label'][l] = self.graph['dirichlet'][1][x][l]
             self.graph['mdp'].add_mean_sigma()
             #----------                
@@ -211,10 +209,8 @@ class Product_Dra(DiGraph):
                             if f_u in e_prop:
                                 k_x_u = self.graph['dirichlet'][0][(f_x,f_u)][t_x]
                                 k_x_l = self.graph['dirichlet'][1][t_x][t_l]
-                                mean_p = [mean_b[b] for b in mean_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                sigma = [sigma_b[b] for b in sigma_b if (b[0]==t_node[0]) and (b[1]==t_node[1])]
-                                self[f_node][t_node]['prop'][f_u][0] = mean_p[0]
-                                self[f_node][t_node]['prop'][f_u][1] = sigma[0]
+                                self[f_node][t_node]['prop'][f_u][0] = mean_b[(t_x,t_l)]
+                                self[f_node][t_node]['prop'][f_u][1] = sigma_b[(t_x,t_l)]
                                 self[f_node][t_node]['prop'][f_u][3] = 5.0/(1+k_x_u) + 5.0/(1+k_x_l)
                         #print '-----update mean sigma done----------'
                     # else:
@@ -555,18 +551,15 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
         if (t == 0):
             #print '---initial run----'
             initial_set  = prod_mdp.graph['initial'].copy()
-            current_state = initial_set.pop()                    
-            mdp_state = current_state[0]
-            label = current_state[0]
+            current_state = list(init_set)[0]
         else:
-            #print '---with sensing model---'
             prev_state = tuple(current_state)
             S = []
             P = []
-            if m != 2: # in prefix or suffix   
+            if ((best_m == 0) or (best_m == 1)): # in prefix or suffix   
                 for next_state in prod_mdp.successors(prev_state):
                     prop = prod_mdp[prev_state][next_state]['prop']
-                    if (u in prop.keys()):
+                    if (best_u in prop.keys()):
                         S.append(next_state)
                         P.append(prop[u][0])
             rdn = random.random()
@@ -576,9 +569,8 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
                 if pc > rdn:
                     break
             current_state = tuple(S[k])
-            mdp_state = prod_mdp.node[current_state]['mdp']
-            label = prod_mdp.node[current_state]['label']
         #----
+        #print '---with sensing model---'
         t1 = time.time()
         print 'Move to new state %s, time: %s' %(str(current_state), str(t1-t0))
         s_p, l_p = sensor.measure_by_sense(prod_mdp, current_state)
@@ -592,11 +584,11 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
         prod_mdp.current_plan = [best_all_plan, segment]
         t4 = time.time()
         print 'Safe plan synthesis done, time: %s' %(str(t4-t3))
-        u, m = act_by_plan(prod_mdp, best_all_plan, segment, current_state)
+        best_u, best_m = act_by_plan(prod_mdp, best_all_plan, segment, current_state)
         X.append(mdp_state)
         PX.append(current_state)
         L.append(set(label))
-        U.append(u)
-        M.append(m)
+        U.append(best_u)
+        M.append(best_m)
         t += 1
     return X, L, U, M, PX                    

@@ -31,10 +31,8 @@ def compute_sigma(n, alpha, N=50):
                 sum_sigma += (s-mean)
         mean_sigma = sum_sigma*1.0/N
     return mean_sigma
-    
 
-        
-        
+    
 def est_prod_mean_sigma(dirichlet, f_x, f_u, N=10):
     s_u_p, s_l_p = dirichlet[:]
     t_x_k = s_u_p[(f_x,f_u)]

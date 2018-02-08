@@ -35,7 +35,7 @@ class sensor(object):
                 # labels
                 for key,value in self.real_map.node[x]['label'].iteritems():
                     l_p[(x, key)] = value
-        # for height difference
+        # for transition not allowed due to height
         # --------------------
         slope = self.slope
         f_height = prod_mdp.graph['mdp'].node[x]['height'] 

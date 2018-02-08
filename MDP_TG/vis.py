@@ -12,92 +12,86 @@ matplotlib.rcParams['pdf.use14corefonts'] = True
 matplotlib.rcParams['text.usetex'] = True
 
 
-def visualize_world_paths(l, Ns, robot_nodes, XX, LL, UU, MM, name=None):
+def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
     #----visualize simulated runs----
-    N = len(XX)
     k_colors = plt.get_cmap('PRGn')
-    #----
-    for n in xrange(0, N):
-        figure = plt.figure()
-        ax = figure.add_subplot(1,1,1)
-        #----- draw the workspace
-        for node, prop in robot_nodes.iteritems():
-            label = prop[0]
-            if frozenset(['b']) in label.keys():
-                text = '$b$'                
-                color = 'yellow'
-                density = label[frozenset(['b'])]
-            elif frozenset(['o']) in label.keys():
-                text = '$o$'
-                color = 'red'
-                density = label[frozenset(['o'])]
-            elif frozenset(['h',]) in label.keys():
-                text = '$h$'
-                color = '#00bfff'
-                density = label[frozenset(['h'])]
-            else:
-                text = None
-                color = 'white'
-            ht = prop[1]
-            if color == 'white':
-                if ((ht>=0.1*l) or (ht<=-0.1*l)):
-                    MIN_H, MAX_H = [-2*l, 1.5*l]
-                    c = (ht - MIN_H)/(MAX_H - MIN_H)
-                    color = k_colors(c)
-            rec = matplotlib.patches.Rectangle((node[0]-l, node[1]-l),
-                                               l*2, l*2,
-                                               fill = True,
-                                               facecolor = color,
-                                               edgecolor = 'black',
-                                               linewidth = 1,
-                                               alpha =0.8)
-            ax.add_patch(rec)
-            if text:
-                ax.text(node[0], node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')
-        X = list(XX[n])
-        L = list(LL[n])
-        M = list(MM[n])
-        K = len(X)
-        #print 'K: %s' %K
-        for k in xrange(0, K):
-            if M[k] == 0:
-                Ecolor = 'blue'
-            if M[k] == 1:
-                Ecolor = 'magenta'
-            if M[k] == 2:
-                Ecolor = 'black'
-            if M[k] > 2:
-                Ecolor = 'magenta'                
-            #----
-            if (k<= K-2):
-                line = matplotlib.lines.Line2D([X[k][0],X[k+1][0]],
-                                               [X[k][1],X[k+1][1]],
-                                               linestyle='-',
-                                               linewidth=1,
-                                               color=Ecolor)
-                ax.add_line(line)
-                xl = X[k][0]
-                yl = X[k][1]
-                dl = X[k][2]
-                if dl == 'N':
-                    car=[(xl-0.4*l,yl-0.4*l), (xl-0.4*l,yl+0.4*l), (xl, yl+0.8*l), (xl+0.4*l, yl+0.4*l), (xl+0.4*l,yl-0.4*l)]
-                if dl == 'E':
-                    car=[(xl-0.4*l,yl+0.4*l), (xl+0.4*l,yl+0.4*l), (xl+0.8*l, yl), (xl+0.4*l, yl-0.4*l), (xl-0.4*l,yl-0.4*l)]
-                if dl == 'S':
-                    car=[(xl+0.4*l,yl+0.4*l), (xl+0.4*l,yl-0.4*l), (xl, yl-0.8*l), (xl-0.4*l, yl-0.4*l), (xl-0.4*l,yl+0.4*l)]
-                if dl == 'W':
-                    car=[(xl+0.4*l,yl-0.4*l), (xl-0.4*l,yl-0.4*l), (xl-0.8*l, yl), (xl-0.4*l, yl+0.4*l), (xl+0.4*l,yl+0.4*l)]
-                print 'drawing car'
-                polygon = Polygon(car, facecolor='black', edgecolor='black', lw=0.5, alpha=0.7, zorder = 4)
-                ax.add_patch(polygon)
-        ax.set_aspect('equal')
-        ax.set_xlim(0, Ns*2*l)
-        ax.set_ylim(0, Ns*2*l)
-        ax.set_xlabel(r'$x(m)$')
-        ax.set_ylabel(r'$y(m)$')    
-        if name:
-            plt.savefig('%s%s.pdf' %(name,str(n)),bbox_inches='tight')
-            print "%s%s.pdf saved" %(name,str(n))
+    figure = plt.figure()
+    ax = figure.add_subplot(1,1,1)
+    #----- draw the workspace
+    for node, prop in robot_nodes.iteritems():
+        label = prop[0]
+        if frozenset(['b']) in label.keys():
+            text = '$b$'                
+            color = 'yellow'
+            density = label[frozenset(['b'])]
+        elif frozenset(['o']) in label.keys():
+            text = '$o$'
+            color = 'red'
+            density = label[frozenset(['o'])]
+        elif frozenset(['h',]) in label.keys():
+            text = '$h$'
+            color = '#00bfff'
+            density = label[frozenset(['h'])]
+        else:
+            text = None
+            color = 'white'
+        ht = prop[1]
+        if color == 'white':
+            if ((ht>=0.1*l) or (ht<=-0.1*l)):
+                MIN_H, MAX_H = [-2*l, 1.5*l]
+                c = (ht - MIN_H)/(MAX_H - MIN_H)
+                color = k_colors(c)
+        rec = matplotlib.patches.Rectangle((node[0]-l, node[1]-l),
+                                           l*2, l*2,
+                                           fill = True,
+                                           facecolor = color,
+                                           edgecolor = 'black',
+                                           linewidth = 1,
+                                           alpha =0.8)
+        ax.add_patch(rec)
+        if text:
+            ax.text(node[0], node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')
+    K = len(X)
+    #print 'K: %s' %K
+    for k in xrange(0, K):
+        if M[k] == 0:
+            Ecolor = 'blue'
+        if M[k] == 1:
+            Ecolor = 'magenta'
+        if M[k] == 2:
+            Ecolor = 'black'
+        if M[k] > 2:
+            Ecolor = 'magenta'                
+        #----
+        if (k<= K-2):
+            line = matplotlib.lines.Line2D([X[k][0],X[k+1][0]],
+                                           [X[k][1],X[k+1][1]],
+                                           linestyle='-',
+                                           linewidth=1,
+                                           color=Ecolor)
+            ax.add_line(line)
+            xl = X[k][0]
+            yl = X[k][1]
+            dl = X[k][2]
+            if dl == 'N':
+                car=[(xl-0.4*l,yl-0.4*l), (xl-0.4*l,yl+0.4*l), (xl, yl+0.8*l), (xl+0.4*l, yl+0.4*l), (xl+0.4*l,yl-0.4*l)]
+            if dl == 'E':
+                car=[(xl-0.4*l,yl+0.4*l), (xl+0.4*l,yl+0.4*l), (xl+0.8*l, yl), (xl+0.4*l, yl-0.4*l), (xl-0.4*l,yl-0.4*l)]
+            if dl == 'S':
+                car=[(xl+0.4*l,yl+0.4*l), (xl+0.4*l,yl-0.4*l), (xl, yl-0.8*l), (xl-0.4*l, yl-0.4*l), (xl-0.4*l,yl+0.4*l)]
+            if dl == 'W':
+                car=[(xl+0.4*l,yl-0.4*l), (xl-0.4*l,yl-0.4*l), (xl-0.8*l, yl), (xl-0.4*l, yl+0.4*l), (xl+0.4*l,yl+0.4*l)]
+            print 'drawing car'
+            polygon = Polygon(car, facecolor='black', edgecolor='black', lw=0.5, alpha=0.7, zorder = 4)
+            ax.add_patch(polygon)
+    ax.set_aspect('equal')
+    ax.set_xlim(0, Ns*2*l)
+    ax.set_ylim(0, Ns*2*l)
+    ax.set_xlabel(r'$x(m)$')
+    ax.set_ylabel(r'$y(m)$')    
+    if name:
+        plt.savefig('%s.pdf' %name, bbox_inches='tight')
+        print "%s.pdf saved" %name
 
 
             

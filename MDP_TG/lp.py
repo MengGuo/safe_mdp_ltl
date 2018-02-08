@@ -53,25 +53,24 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
     print "===========[plan prefix synthesis starts]==========="
     gamma_o = gamma[0]
     gamma_r = gamma[1]
-    sf = MEC[0]
-    ip = MEC[1] #force convergence to ip
+    Sf = MEC[0]
     delta = 1.0
     print 'init_node', init_node
-    print 'init node not in sf', (init_node not in sf)
-    if init_node not in sf:
+    print 'init node not in Sf', (init_node not in Sf)
+    if init_node not in Sf:
         print '----- init node in PREFIX ------'
         path_init = single_source_shortest_path(prod_mdp, init_node)
         print 'Reachable from init size: %s' %len(path_init.keys())
-        if not set(path_init.keys()).intersection(sf):
-            print "Initial node can not reach sf"
+        if not set(path_init.keys()).intersection(Sf):
+            print "Initial node can not reach Sf"
             return None, None, None, None, None, None
-        Sn = set(path_init.keys()).difference(sf)
+        Sn = set(path_init.keys()).difference(Sf)
         #----find bad states that can not reach MEC
         simple_digraph = DiGraph()
         simple_digraph.add_edges_from(((v,u) for u,v in prod_mdp.edges()))
         path = single_source_shortest_path(simple_digraph, random.sample(ip,1)[0])
         reachable_set = set(path.keys())
-        print 'States that can reach sf, size: %s' %str(len(reachable_set))
+        print 'States that can reach Sf, size: %s' %str(len(reachable_set))
         Sd = Sn.difference(reachable_set)
         Sr = Sn.intersection(reachable_set)
         # #--------------
@@ -93,11 +92,9 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             obj = 0
             for s in Sr:
                 for u in prod_mdp.node[s]['act']:
-                    sum_s_u = 0
                     for t in prod_mdp.successors(s):
                         prop = prod_mdp[s][t]['prop'].copy()
                         if u in prop.keys():
-                            sum_s_u += prop[u][0]
                             xi = prop[u][3]
                             pe = prop[u][0]
                             ce = prop[u][2]
@@ -107,23 +104,19 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             # add constraints
             #------------------------------
             y_to_sd = 0.0
-            y_to_sf = 0.0
+            y_to_Sf = 0.0
             for s in Sr:
                 for t in prod_mdp.successors(s):
-                    if t in Sd:
-                        prop = prod_mdp[s][t]['prop'].copy()
-                        for u in prop.iterkeys():
-                            sigma = prop[u][1]
-                            pe = prop[u][0]
+                    prop = prod_mdp[s][t]['prop'].copy()
+                    for u in prop.iterkeys():
+                        sigma = prop[u][1]
+                        pe = prop[u][0]
+                        if t in Sd:
                             y_to_sd += Y[(s,u)]*pe*(1+sigma)
-                    elif t in sf:
-                        prop = prod_mdp[s][t]['prop'].copy()
-                        for u in prop.iterkeys():
-                            sigma = prop[u][1]
-                            pe = prop[u][0]
-                            y_to_sf += Y[(s,u)]*pe*(1+sigma)
-            # model.addConstr(y_to_sf+y_to_sd >= delta, 'sum_out')
-            model.addConstr(y_to_sf >= gamma_o*(y_to_sf+y_to_sd), 'risk')
+                        elif t in Sf:
+                            y_to_Sf += Y[(s,u)]*pe*(1+sigma)
+            # model.addConstr(y_to_Sf+y_to_sd >= delta, 'sum_out')
+            model.addConstr(y_to_Sf >= gamma_o*(y_to_Sf+y_to_sd), 'risk')
             print 'Risk constraint added'
             #------------------------------
             y_to_return = 0.0
@@ -150,7 +143,6 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                             node_y_in += Y[(f,uf)]*prop[uf][0]
                 if t == init_node:
                     model.addConstr(node_y_out == 1.0 + node_y_in, 'init_node_flow_balance')
-
                 else:
                     model.addConstr(node_y_out == node_y_in, 'middle_node_flow_balance')
             print 'Initial node flow balanced'
@@ -186,7 +178,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             # compute the risk given the plan prefix
             risk = 0.0
             y_to_sd = 0.0
-            y_to_sf = 0.0
+            y_to_Sf = 0.0
             for s in Sr:
                 for t in prod_mdp.successors(s):
                     if t in Sd:
@@ -194,37 +186,37 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                         for u in prop.iterkeys(): 
                             pe = prop[u][0]
                             y_to_sd += Y[(s,u)].X*pe
-                    elif t in sf:
+                    elif t in Sf:
                         prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys(): 
                             pe = prop[u][0]
-                            y_to_sf += Y[(s,u)].X*pe
-            if (y_to_sd+y_to_sf) >0:
-                risk = y_to_sd/(y_to_sd+y_to_sf)
-            print 'y_to_sd: %s; y_to_sd+y_to_sf: %s' %(y_to_sd, y_to_sd+y_to_sf)
+                            y_to_Sf += Y[(s,u)].X*pe
+            if (y_to_sd+y_to_Sf) >0:
+                risk = y_to_sd/(y_to_sd+y_to_Sf)
+            print 'y_to_sd: %s; y_to_sd+y_to_Sf: %s' %(y_to_sd, y_to_sd+y_to_Sf)
             print "----Prefix risk computed: %s" %str(risk)
             # compute the input flow to the suffix
-            y_in_sf = dict()
+            y_in_Sf = dict()
             for s in Sn:
                 for t in prod_mdp.successors(s):
-                    if t in sf:
+                    if t in Sf:
                         prop = prod_mdp[s][t]['prop'].copy()
                         for u in prop.iterkeys():
                             pe = prop[u][0]
-                            if t not in y_in_sf:
-                                y_in_sf[t] = Y[(s,u)].X*pe
+                            if t not in y_in_Sf:
+                                y_in_Sf[t] = Y[(s,u)].X*pe
                             else:
-                                y_in_sf[t] += Y[(s,u)].X*pe
+                                y_in_Sf[t] += Y[(s,u)].X*pe
             # normalize the input flow
             y_total = 0.0
-            for s, y in y_in_sf.iteritems():
+            for s, y in y_in_Sf.iteritems():
                 y_total += y
             print 'actual y_total: %s' %str(y_total)
             if y_total >0:
-                for s in y_in_sf.iterkeys():
-                    y_in_sf[s] = y_in_sf[s]/y_total
+                for s in y_in_Sf.iterkeys():
+                    y_in_Sf[s] = y_in_Sf[s]/y_total
                 print "----Y in Sf computed and normalized"
-            #print y_in_sf                
+            #print y_in_Sf                
             # compute safety
             y_to_return = 0.0
             for t in prod_mdp.successors(init_node):
@@ -235,7 +227,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                     pe = prop[u][0]
                     y_to_return += Y[(init_node,u)].X*pe*(v+sigma)
             print "----safety computed: %s for given gamma_r %s" %(str(y_to_return), gamma_r)
-            return plan_prefix, cost, risk, y_in_sf, Sr, Sd
+            return plan_prefix, cost, risk, y_in_Sf, Sr, Sd
         except GurobiError:
             print "Gurobi Error reported"
             return None, None, None, None, None, None
