@@ -98,7 +98,7 @@ print 'Compute MEC done, time: %s' %str(t44-t43)
 
 # #------
 t5 = time.time()
-total_T = 15
+total_T = 20
 X, L, U, M, PX = execution_with_sensing(prod_dra, robot_sensor, total_T)
 print '------------------------------'
 print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t44))

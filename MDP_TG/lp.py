@@ -211,6 +211,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                         for u in prop.iterkeys(): 
                             pe = prop[u][0]
                             y_to_Sf += Y[(s,u)].X*pe
+                            if Y[(s,u)].X > 0.0:
+                                print '(s,u), Y[(s,u)].X, pe', [(s,u), Y[(s,u)].X, pe]
             if (y_to_sd+y_to_Sf) >0:
                 risk = y_to_sd/(y_to_sd+y_to_Sf)
             print 'y_to_sd: %s; y_to_Sf: %s' %(y_to_sd, y_to_Sf)
@@ -278,6 +280,8 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
         print '---------- init_node in SUFFIX ----------'
         if init_node in ip:
             print 'init_node in Ip'
+        else:
+            print 'init_node NOT in Ip'
         paths = single_source_shortest_path(prod_mdp, init_node)
         Sn = set(paths.keys()).intersection(Sf)
         print 'Sf size: %s' %len(Sf)
@@ -384,8 +388,8 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
             # solve
             model.optimize()
             # print '--variables value--'
-            for v in model.getVars():
-                print v.varName, v.x
+            # for v in model.getVars():
+            #     print v.varName, v.x
             # print 'obj:', model.objVal
             #------------------------------
             # compute optimal plan suffix given the LP solution
@@ -408,11 +412,20 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
             print "----Suffix plan generated----"
             if init_node in ip:
                 print 'init_node in Ip'
+            else:
+                print 'init_node NOT in Ip'
             print "----solution for current_node %s----" %str(init_node)
-            Y_init_node = dict()
+            Y_init_node_out = dict()
             for u in act[init_node]:
-                Y_init_node[u] =  Y[(init_node,u)].X
-            print 'Y_init_node', Y_init_node
+                Y_init_node_out[u] =  Y[(init_node,u)].X
+            print 'Y_init_node_out', Y_init_node_out
+            Y_init_node_in = dict()
+            for f in prod_mdp.predcessors(init_node):
+                prop = prod_mdp[f][init_node]['prop'].copy()
+                for uf in prop:
+                    if uf in act[f]:
+                        Y_init_node_in[(f,uf)] = (prop[uf][0], Y[(f,uf)].X, prop[uf][0]*Y[(f,uf)].X)
+            print 'Y_init_node_in', Y_init_node_in
             print "----Plan for current_node %s----" %str(init_node)
             print plan_suffix[init_node]
             cost = model.objval
@@ -429,6 +442,8 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                                 # print '[s, u, t, Y[(s,u)].X]', [s, u, t, Y[(s,u)].X]
                                 pe = prop[u][0]
                                 y_to_ip += Y[(s,u)].X*pe
+                                if Y[(s,u)].X > 0.0:
+                                    print '(s,u,t), Y[(s,u)].X, pe', [(s,u,t), Y[(s,u)].X, pe]
             print 'Task constraint: %s' %y_to_ip
             risk = y_to_ip
             # compute safety
