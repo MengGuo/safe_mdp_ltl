@@ -559,12 +559,12 @@ def execution_with_sensing(prod_mdp, sensor, total_T):
             prev_state = tuple(current_state)
             S = []
             P = []
-            if ((best_m == 0) or (best_m == 1)): # in prefix or suffix   
-                for next_state in prod_mdp.successors(prev_state):
-                    prop = prod_mdp[prev_state][next_state]['prop']
-                    if (best_u in prop.keys()):
-                        S.append(next_state)
-                        P.append(prop[best_u][0])
+            #if ((best_m == 0) or (best_m == 1)): # in prefix or suffix   
+            for next_state in prod_mdp.successors(prev_state):
+                prop = prod_mdp[prev_state][next_state]['prop']
+                if (best_u in prop.keys()):
+                    S.append(next_state)
+                    P.append(prop[best_u][0])
             print 'S, P', [S, P]
             rdn = random.random()
             pc = 0            

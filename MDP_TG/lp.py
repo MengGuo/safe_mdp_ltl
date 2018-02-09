@@ -420,11 +420,13 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                 Y_init_node_out[u] =  Y[(init_node,u)].X
             print 'Y_init_node_out', Y_init_node_out
             Y_init_node_in = dict()
-            for f in prod_mdp.predcessors(init_node):
-                prop = prod_mdp[f][init_node]['prop'].copy()
-                for uf in prop:
-                    if uf in act[f]:
-                        Y_init_node_in[(f,uf)] = (prop[uf][0], Y[(f,uf)].X, prop[uf][0]*Y[(f,uf)].X)
+            for f in prod_mdp.predecessors(init_node):
+                if f in Sf:
+                    prop = prod_mdp[f][init_node]['prop'].copy()
+                    for uf in prop:
+                        if uf in act[f]:
+                            if prop[uf][0]*Y[(f,uf)].X>0:
+                                Y_init_node_in[(f,uf)] = (prop[uf][0], Y[(f,uf)].X, prop[uf][0]*Y[(f,uf)].X)
             print 'Y_init_node_in', Y_init_node_in
             print "----Plan for current_node %s----" %str(init_node)
             print plan_suffix[init_node]
