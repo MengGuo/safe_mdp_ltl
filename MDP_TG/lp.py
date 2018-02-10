@@ -66,6 +66,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
             print "Initial node can not reach Sf"
             return None, None, None, None, None, None
         Sn = set(path_init.keys()).difference(Sf)
+        print 'Reachable nodes from init and not in Sf, size: %s' %str(len(Sn))
         #----find bad states that can not reach MEC
         simple_digraph = DiGraph()
         simple_digraph.add_edges_from(((v,u) for u,v in prod_mdp.edges()))
@@ -250,7 +251,7 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                     pe = prop[u][0]
                     y_to_return.append(Y[(init_node,u)].X*pe*(v+sigma))
                     p_to_return.append(Y[(init_node,u)].X)
-            print "----Prefix safety computed: *%s* (%s) of *%s* (%s) for given gamma_r %s" %(sum(y_to_return), str(y_to_return), sum(p_to_return), str(p_to_return), gamma_r)
+            print "----Prefix safety computed: *%s* (%s) of *%s* (%s) = %.2f for given gamma_r %s" %(sum(y_to_return), str(y_to_return), sum(p_to_return), str(p_to_return), (sum(y_to_return)/sum(p_to_return)), gamma_r)
             return plan_prefix, cost, risk, y_in_Sf, Sr, Sd
         except GurobiError:
             print "Gurobi Error reported"
@@ -461,7 +462,7 @@ def syn_plan_suffix_new(prod_mdp, MEC, gamma, init_node):
                         y_to_return += Y[(init_node,u)].X*pe*(v+sigma)
                         p_to_return += Y[(init_node,u)].X
                         # print '[init_node, u, t, y_to_return, p_to_return]', [init_node, u, t, Y[(init_node,u)].X*pe*(v+sigma), Y[(init_node,u)].X]
-            print "----Suffix safety computed: %s of %s for given gamma_r %s" %(str(y_to_return), str(p_to_return), gamma_r)
+            print "----Suffix safety computed: %s of %s = %.2f for given gamma_r %s" %(str(y_to_return), str(p_to_return), (y_to_return/p_to_return), gamma_r)
             return plan_suffix, cost, risk
         except GurobiError:
             print "Gurobi Error reported"

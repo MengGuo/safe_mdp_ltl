@@ -18,7 +18,7 @@ N = 4
 label_set = set([frozenset(['o',]), frozenset(['h',]), frozenset(['b',]), frozenset([])])
 features = {(N-1,1): frozenset(['o',]),
             #(1,N-1): frozenset(['o',]),
-            (3,2): frozenset(['h',]),
+            (1,2): frozenset(['h',]),
             (4,4): frozenset(['b',])}
 heights = {(2,2): 1, (2,4): -1}
 blur = 1
@@ -33,7 +33,7 @@ home_xy = [(N, N)]
 home_states = set([((2*n_x-1)*l, (2*n_x-1)*l, d) for (n_x, n_y) in home_xy for d in ['N', 'S', 'E', 'W']])
 
 U = [tuple('FR'), tuple('BK'), tuple('TR'), tuple('TL')]
-C = [3.0, 6.0, 5.0, 5.0]
+C = [4.0, 6.0, 5.0, 5.0]
 P_FR = [1, 8, 1, 1]
 P_BK = [2, 6, 2, 1]
 P_TR = [1, 8, 1]
@@ -76,7 +76,7 @@ print 'DRA done, time: %s' %str(t3-t2)
 
 #----
 print '------------------------------'
-gamma = [0.4, 0.9] # gamma_o, gamma_r
+gamma = [0.8, 0.7] # gamma_o, gamma_r
 prod_dra = Product_Dra(mdp=robot_mdp, dra=dra, gamma=gamma)
 #prod_dra.dotify()
 t41 = time.time()
@@ -98,7 +98,7 @@ print 'Compute MEC done, time: %s' %str(t44-t43)
 
 # #------
 t5 = time.time()
-total_T = 20
+total_T = 25
 X, L, U, M, PX = execution_with_sensing(prod_dra, robot_sensor, total_T)
 print '------------------------------'
 print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t44))
