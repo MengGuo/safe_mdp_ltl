@@ -21,29 +21,31 @@ features = {# obs
             (N-1, 2): frozenset(['o',]),
             (N-2, 2): frozenset(['o',]),
             (N-3, 2): frozenset(['o',]),
-            (N-3, 1): frozenset(['o',]),
-            (N-4, 1): frozenset(['o',]),
+            (N-1, 1): frozenset(['o',]),
+            (N-1, 3): frozenset(['o',]),
             (2, N-1): frozenset(['o',]),
             (2, N-2): frozenset(['o',]),
             (2, N-3): frozenset(['o',]),
             (3, N-1): frozenset(['o',]),            
             # human
-            (2, 4): frozenset(['h',]),
-            (2, 5): frozenset(['h',]),
+            (1, 2): frozenset(['h',]),
+            (1, 3): frozenset(['h',]),
             (3, 4): frozenset(['h',]),
             (3, 5): frozenset(['h',]),
             (8, 6): frozenset(['h',]),
             (8, 5): frozenset(['h',]),
+            (1, 10): frozenset(['h',]),
+            (2, 10): frozenset(['h',]),    
             # water
-            (5, 8): frozenset(['w',]),
-            (5, 7): frozenset(['w',]),
-            (5, 8): frozenset(['w',]),
-            (5, 7): frozenset(['w',]),
+            (6, 10): frozenset(['w',]),
+            (5, 10): frozenset(['w',]),
+            (3, 1): frozenset(['w',]),
+            (3, 2): frozenset(['w',]),
             (N-1, N-2): frozenset(['b',]),
             (N-2, N-1): frozenset(['b',]),
             (N-1, N-1): frozenset(['b',])}
 
-heights = {(1,2): 2, (5,5): -6}
+heights = {(3,2): 3, (3,1): 2, (5,8): 3, (5,9): 2, (5,5): -6, (5,6): -6, (5,4): -6, (6,4): -6, (6,5): -6, (6,6): -6}
 blur = 1
 robot_nodes, real_robot_nodes = construct_nodes(l, N, label_set, features, heights, blur)
 
@@ -89,7 +91,8 @@ robot_sensor = sensor(real_mdp, radius, decay, slope)
 # ----
 print '------------------------------'
 base = '& G F b G F w'
-order = 'G i h X U ! h b'
+#order = 'G i h X U ! h b'
+order = 'G F h'
 safe = 'G ! o'
 task = '& %s & %s %s' %(base, order, safe)
 #task = '& G F b G F h'
@@ -101,7 +104,7 @@ print 'DRA done, time: %s' %str(t3-t2)
 
 #----
 print '------------------------------'
-gamma = [0.1, 0.1] # gamma_o, gamma_r
+gamma = [0.8, 0.5] # gamma_o, gamma_r
 prod_dra = Product_Dra(mdp=robot_mdp, dra=dra, gamma=gamma)
 #prod_dra.dotify()
 t41 = time.time()

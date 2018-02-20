@@ -35,6 +35,10 @@ class sensor(object):
                 # labels
                 for key,value in self.real_map.node[x]['label'].iteritems():
                     l_p[(x, key)] = value
+                    # human rescued should disappear
+                    if ((f_x == x) and (key == frozenset(['h',]))):
+                        self.real_map.node[x][key] = 1
+                        l_p[(x, key)] = 1
         # for transition not allowed due to height
         # --------------------
         slope = self.slope

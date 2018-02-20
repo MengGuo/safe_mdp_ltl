@@ -148,6 +148,15 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                             node_y_in += Y[(f,uf)]*prop[uf][0]
                 if t == init_node:
                     model.addConstr(node_y_out == 1.0 + node_y_in, 'init_node_flow_balance for %s' %str(t))
+                    # model.addConstr(node_y_out == 1.0, 'init_node_out_flow for %s' %str(t))
+                    # node_y_in = 0.0
+                    # for f in prod_mdp.predecessors(t):
+                    #     if (f in Sr) and (f != t):
+                    #         prop = prod_mdp[f][t]['prop'].copy()
+                    #         for uf in prop.iterkeys():
+                    #             #print 'f, uf, t, prop[uf]', [f, uf, t, prop[uf]]
+                    #             node_y_in += Y[(f,uf)]*prop[uf][0]
+                    # model.addConstr(node_y_in == 0.0, 'init_node_in_flow for %s' %str(t))
                 else:
                     model.addConstr(node_y_out == node_y_in, 'middle_node_flow_balance_for_%s' %str(t))
             print 'Initial node flow balanced'

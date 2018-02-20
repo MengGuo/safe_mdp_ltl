@@ -14,7 +14,7 @@ matplotlib.rcParams['text.usetex'] = True
 
 def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
     #----visualize simulated runs----
-    k_colors = plt.get_cmap('Greys')
+    k_colors = plt.get_cmap('copper')
     figure = plt.figure()
     ax = figure.add_subplot(1,1,1)
     #----- draw the workspace
@@ -34,7 +34,7 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
             density = label[frozenset(['h'])]
         elif frozenset(['w',]) in label.keys():
             text = '$w$'
-            color = '#06209c'
+            color = '#ADD8E6'
             density = label[frozenset(['w'])]
         else:
             text = None
