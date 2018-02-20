@@ -14,7 +14,7 @@ matplotlib.rcParams['text.usetex'] = True
 
 def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
     #----visualize simulated runs----
-    k_colors = plt.get_cmap('PRGn')
+    k_colors = plt.get_cmap('Greys')
     figure = plt.figure()
     ax = figure.add_subplot(1,1,1)
     #----- draw the workspace
@@ -32,6 +32,10 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
             text = '$h$'
             color = '#00bfff'
             density = label[frozenset(['h'])]
+        elif frozenset(['w',]) in label.keys():
+            text = '$w$'
+            color = '#06209c'
+            density = label[frozenset(['w'])]
         else:
             text = None
             color = 'white'
@@ -39,7 +43,7 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
         if color == 'white':
             if ((ht>=0.1*l) or (ht<=-0.1*l)):
                 MIN_H, MAX_H = [-2*l, 1.5*l]
-                c = (ht - MIN_H)/(MAX_H - MIN_H)
+                c = (MAX_H - ht)/(MAX_H - MIN_H)
                 color = k_colors(c)
         rec = matplotlib.patches.Rectangle((node[0]-l, node[1]-l),
                                            l*2, l*2,

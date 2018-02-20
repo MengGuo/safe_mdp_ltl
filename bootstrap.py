@@ -88,6 +88,12 @@ def construct_nodes(L, N, label_set, features, heights, blur):
     return robot_nodes, real_robot_nodes
 
 
+def construct_nodes_from_graph(mdp):
+    robot_nodes = dict()
+    for n in mdp.nodes():
+        robot_nodes[n] = [mdp.node[n]['label'], mdp.node[n]['height']]
+    return robot_nodes
+
 
 def construct_edges(robot_nodes, l, U, C, P):
     P_FR, P_BK, P_TR, P_TL = P[:]

@@ -3,7 +3,7 @@ from MDP_TG.dra import Dra, Product_Dra,  execution_with_sensing
 from MDP_TG.vis import visualize_world_paths
 from MDP_TG.sense import sensor
 
-from bootstrap import construct_nodes, construct_edges
+from bootstrap import construct_nodes, construct_edges, construct_nodes_from_graph
 
 
 from math import radians
@@ -14,13 +14,36 @@ t0 = time.time()
 
 #-------- construct model -------
 l = 1 #m
-N = 8
-label_set = set([frozenset(['o',]), frozenset(['h',]), frozenset(['b',]), frozenset([])])
-features = {(N-1,1): frozenset(['o',]),
-            (1,N-1): frozenset(['o',]),
-            (4,4): frozenset(['h',]),
-            (N,N): frozenset(['b',])}
-heights = {(1,2): 1, (5,5): -1}
+N = 10
+label_set = set([frozenset(['o',]), frozenset(['w',]), frozenset(['h',]), frozenset(['b',]), frozenset([])])
+
+features = {# obs
+            (N-1, 2): frozenset(['o',]),
+            (N-2, 2): frozenset(['o',]),
+            (N-3, 2): frozenset(['o',]),
+            (N-3, 1): frozenset(['o',]),
+            (N-4, 1): frozenset(['o',]),
+            (2, N-1): frozenset(['o',]),
+            (2, N-2): frozenset(['o',]),
+            (2, N-3): frozenset(['o',]),
+            (3, N-1): frozenset(['o',]),            
+            # human
+            (2, 4): frozenset(['h',]),
+            (2, 5): frozenset(['h',]),
+            (3, 4): frozenset(['h',]),
+            (3, 5): frozenset(['h',]),
+            (8, 6): frozenset(['h',]),
+            (8, 5): frozenset(['h',]),
+            # water
+            (5, 8): frozenset(['w',]),
+            (5, 7): frozenset(['w',]),
+            (5, 8): frozenset(['w',]),
+            (5, 7): frozenset(['w',]),
+            (N-1, N-2): frozenset(['b',]),
+            (N-2, N-1): frozenset(['b',]),
+            (N-1, N-1): frozenset(['b',])}
+
+heights = {(1,2): 2, (5,5): -6}
 blur = 1
 robot_nodes, real_robot_nodes = construct_nodes(l, N, label_set, features, heights, blur)
 
@@ -41,7 +64,9 @@ P_TL = [1, 8, 1]
 P = [P_FR, P_BK, P_TR, P_TL]
 robot_edges = construct_edges(robot_nodes, l, U, C, P)
 
-#visualize_world_paths(l, N, robot_nodes, [initial_node,initial_node,], [initial_label,initial_label], [], [0,0], 'test_map')
+visualize_world_paths(l, N, robot_nodes, [initial_node,initial_node,], [initial_label,initial_label], [], [0,0], 'initial_robot_map')
+
+visualize_world_paths(l, N, real_robot_nodes, [initial_node,initial_node,], [initial_label,initial_label], [], [0,0], 'real_map')
 
 #-------------
 print '---------- Construct robot mdp ----------'
@@ -63,11 +88,11 @@ robot_sensor = sensor(real_mdp, radius, decay, slope)
 
 # ----
 print '------------------------------'
-base = 'G F b'
+base = '& G F b G F w'
 order = 'G i h X U ! h b'
 safe = 'G ! o'
-task1 = '& %s & %s %s' %(base, order, safe)
-task = '& G F b G F h'
+task = '& %s & %s %s' %(base, order, safe)
+#task = '& G F b G F h'
 print 'Formula received: %s' %str(task)
 dra = Dra(task)
 t3 = time.time()
@@ -76,7 +101,7 @@ print 'DRA done, time: %s' %str(t3-t2)
 
 #----
 print '------------------------------'
-gamma = [0.5, 0.9] # gamma_o, gamma_r
+gamma = [0.1, 0.1] # gamma_o, gamma_r
 prod_dra = Product_Dra(mdp=robot_mdp, dra=dra, gamma=gamma)
 #prod_dra.dotify()
 t41 = time.time()
@@ -106,6 +131,10 @@ print 'Trajectory:', X
 print 'Trace:', L
 print 'Segment', M
 print 'Action', U
+
+
+
+visualize_world_paths(l, N, construct_nodes_from_graph(prod_dra.graph['mdp']), X, L, U, M, 'final_robot_map_traj')
 
 # print '------------------------------'
 # print 'Planning and execution for %d steps, time: %s' %(total_T, str(t5-t44))
