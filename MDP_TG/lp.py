@@ -131,8 +131,8 @@ def syn_plan_prefix(prod_mdp, MEC, gamma, init_node):
                     pe = prop[u][0]
                     y_to_return += Y[(init_node,u)]*pe*(v+sigma)
                     p_to_return += Y[(init_node,u)]
-            #model.addConstr(y_to_return >= gamma_r*p_to_return, 'safety')
-            model.addConstr(y_to_return >= gamma_r, 'safety')
+            model.addConstr(y_to_return >= gamma_r*p_to_return, 'safety')
+            #model.addConstr(y_to_return >= gamma_r, 'safety')
             print 'Safety constraint added'
             #--------------------
             for t in Sr:
