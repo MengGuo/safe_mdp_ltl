@@ -58,6 +58,7 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
     K = len(X)
     #print 'K: %s' %K
     for k in xrange(0, K):
+        l_wid = 2
         if M[k] == 0:
             Ecolor = 'blue'
         if M[k] == 1:
@@ -65,13 +66,14 @@ def visualize_world_paths(l, Ns, robot_nodes, X, L, U, M, name=None):
         if M[k] == 2:
             Ecolor = 'black'
         if M[k] > 2:
-            Ecolor = 'magenta'                
+            Ecolor = 'green'
+            l_wid = 10
         #----
         if (k<= K-2):
             line = matplotlib.lines.Line2D([X[k][0],X[k+1][0]],
                                            [X[k][1],X[k+1][1]],
                                            linestyle='-',
-                                           linewidth=1,
+                                           linewidth=l_wid,
                                            color=Ecolor)
             ax.add_line(line)
             xl = X[k][0]
