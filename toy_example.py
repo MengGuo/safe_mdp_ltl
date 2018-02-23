@@ -72,7 +72,7 @@ visualize_world_paths(l, N, real_robot_nodes, [initial_node,initial_node,], [ini
 
 #-------------
 print '---------- Construct robot mdp ----------'
-robot_mdp = Motion_MDP(real_robot_nodes, robot_edges, U, initial_node, initial_label, home_states)
+robot_mdp = Motion_MDP(robot_nodes, robot_edges, U, initial_node, initial_label, home_states)
 #robot_mdp.verify()
 print '---------- Construct real robot mdp ----------'
 real_mdp = Motion_MDP(real_robot_nodes, robot_edges, U, initial_node, initial_label, home_states)
